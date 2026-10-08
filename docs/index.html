@@ -57,11 +57,44 @@ h2{font-size:1.4rem;font-weight:600}
 .sheet{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;gap:16px;min-width:0}
 .rules{margin:0;padding-left:1.2em;display:grid;gap:6px}
 .note{font:.85rem/1.5 var(--ui);color:var(--muted);margin:0}
+dialog.welcome{max-width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 24px);overflow:auto;border:0;border-radius:18px;padding:22px 24px;background:var(--paper);color:var(--ink);box-shadow:0 24px 60px rgba(20,14,35,.35);display:grid;gap:10px}
+dialog.welcome::backdrop{background:rgba(26,20,40,.55);backdrop-filter:blur(2px)}
+dialog.welcome h2{font-size:1.3rem}
+dialog.welcome .rules{gap:2px;font:.9rem/1.45 var(--ui)}
+dialog.welcome p{margin:0;font:.9rem/1.5 var(--ui)}
+dialog.welcome .by{font-size:.85rem;color:var(--muted)}
+dialog.welcome .by a{color:var(--accent);font-weight:600}
+dialog.welcome textarea{font:.95rem/1.5 var(--ui);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical;min-height:110px}
+dialog.welcome textarea:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.fb-tipos{display:flex;flex-wrap:wrap;gap:6px;border:0;padding:0;margin:0}
+.fb-tipos label{font:600 .85rem var(--ui);padding:6px 12px;border:1px solid var(--line);border-radius:99px;cursor:pointer}
+.fb-tipos label:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.fb-tipos input{position:absolute;opacity:0;pointer-events:none}
+.fb-tipos label:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:2px}
+.fb-acts{display:flex;gap:8px;justify-content:flex-end}
+button.fb-link{justify-self:start;background:none;border:0;padding:0;font-size:.85rem;color:var(--muted);text-decoration:underline}
+dialog.welcome #welcome-ok{width:100%;margin-top:4px}
+@media (prefers-reduced-motion:no-preference){dialog.welcome[open]{animation:welcome-in .25s ease-out}}
+@keyframes welcome-in{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
 .credit{font:.85rem/1.5 var(--ui);color:var(--muted);text-align:center;padding-block:8px 0}
 .credit a{color:var(--accent);font-weight:600;text-decoration:none}
 .credit a:hover,.credit a:focus-visible{text-decoration:underline}
 .credit{display:grid;justify-items:center;gap:10px}
-.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.top-actions{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+@keyframes star-pop{0%{transform:scale(1)}40%{transform:scale(1.7) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
+a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
+.spark{position:fixed;pointer-events:none;color:#e3a008;font-size:15px;line-height:1;z-index:10;animation:spark .8s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.3) rotate(140deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.spark{display:none}a.star.pop>span:first-child{animation:none}}
+a.star.done{border-color:#e3a008}
+.mascot{position:relative;display:inline-block;width:30px;height:30px;margin:-6px 0}
+.mascot svg{width:30px;height:30px;transform-origin:50% 85%;animation:dance .9s ease-in-out infinite}
+.mascot i{position:absolute;right:-8px;top:-6px;font-style:normal;font-size:.8rem;color:#e3a008;animation:note 1.8s ease-in-out infinite}
+@keyframes dance{0%,100%{transform:translateY(0) rotate(-12deg)}25%{transform:translateY(-4px) rotate(0) scale(1.06,.94)}50%{transform:translateY(0) rotate(12deg)}75%{transform:translateY(-4px) rotate(0) scale(1.06,.94)}}
+@keyframes note{0%{transform:translate(0,4px);opacity:0}30%{opacity:1}100%{transform:translate(6px,-10px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mascot svg,.mascot i{animation:none}}
+.star-wrap{display:grid;justify-items:center;gap:2px}
+.plea{font:500 .72rem var(--ui);color:var(--muted)}
 a.star{display:inline-flex;align-items:center;gap:8px;font:600 .8rem var(--ui);color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--paper)}
 a.star:hover,a.star:focus-visible{border-color:#e3a008;text-decoration:none}
 a.star>span:first-child{color:#e3a008;font-size:1.05rem}
@@ -215,8 +248,40 @@ let s, tick, chosen = PROVAS[0].id;
 
 const REPO = "luizgustavo664/Simulado-Eixo-Prova-Inteli";
 let stars = null;
-const starBtn = () => `<a class="star" href="https://github.com/${REPO}" target="_blank" rel="noopener"><span aria-hidden="true">★</span> Deixe uma estrela no GitHub<span class="count" data-stars>${stars ?? ""}</span></a>`;
+const starred = () => { try { return localStorage.getItem("estrelou") === "1"; } catch { return false; } };
+// mascote original: estrelinha com rosto, dança em loop depois do clique
+const MASCOT = `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2.5l5.3 11 12 1.6-8.8 8.3 2.2 11.9L20 29.6 9.3 35.3l2.2-11.9-8.8-8.3 12-1.6z" fill="#f5b301" stroke="#c98a00" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="19" r="1.9" fill="#2e2640"/><circle cx="24" cy="19" r="1.9" fill="#2e2640"/><path d="M16 23.5q4 3.6 8 0" fill="none" stroke="#2e2640" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="22.5" r="1.4" fill="#ff8a7a" opacity=".8"/><circle cx="27" cy="22.5" r="1.4" fill="#ff8a7a" opacity=".8"/></svg>`;
+const starBtn = () => starred()
+  ? `<a class="star done" href="https://github.com/${REPO}" target="_blank" rel="noopener"><span class="mascot">${MASCOT}<i aria-hidden="true">♪</i></span> Valeu pela estrela!<span class="count" data-stars>${stars ?? ""}</span></a>`
+  : `<a class="star" href="https://github.com/${REPO}" target="_blank" rel="noopener"><span aria-hidden="true">★</span> Deixe uma estrela no GitHub<span class="count" data-stars>${stars ?? ""}</span></a>`;
+const starWrap = () => `<span class="star-wrap">${starBtn()}<small class="plea">${starred() ? "valeu, futuro Inteler! 🥳" : "por favor 😭😭"}</small></span>`;
 // contagem de estrelas pela API pública do GitHub; se falhar (sem rede, limite, visualizador bloqueia), o botão fica sem número
+// clique na estrela: comemoração na página (o GitHub abre em outra aba normalmente)
+let celebrateOnReturn = false;
+document.addEventListener("click", e => {
+  const a = e.target.closest?.("a.star"); if (!a) return;
+  try { localStorage.setItem("estrelou", "1"); } catch {}
+  celebrateOnReturn = true;
+  setTimeout(() => { if (celebrateOnReturn && !document.hidden) welcomeBack(); }, 1500);
+});
+document.addEventListener("visibilitychange", () => { if (!document.hidden && celebrateOnReturn) setTimeout(welcomeBack, 300); });
+function welcomeBack() {
+  celebrateOnReturn = false;
+  document.querySelectorAll(".star-wrap").forEach(w => w.outerHTML = starWrap());
+  const a = document.querySelector("a.star"); if (a) celebrate(a);
+}
+function celebrate(a) {
+  a.classList.remove("pop"); void a.offsetWidth; a.classList.add("pop");
+  const r = a.querySelector("span").getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 12; i++) {
+    const sp = document.createElement("span"), ang = (i / 12) * 2 * Math.PI, d = 45 + Math.random() * 35;
+    sp.className = "spark"; sp.textContent = "★";
+    Object.assign(sp.style, { left: cx - 7 + "px", top: cy - 8 + "px" });
+    sp.style.setProperty("--dx", Math.cos(ang) * d + "px"); sp.style.setProperty("--dy", Math.sin(ang) * d + "px");
+    document.body.appendChild(sp); setTimeout(() => sp.remove(), 900);
+  }
+}
+
 fetch(`https://api.github.com/repos/${REPO}`).then(r => r.ok ? r.json() : null).then(d => {
   if (!(d?.stargazers_count > 0)) return; // com 0 estrelas o botão fica sem número
   stars = d.stargazers_count;
@@ -266,6 +331,7 @@ function renderHistory() {
 // tema: claro por padrão; a escolha fica salva só neste navegador
 const root = document.documentElement;
 try { if (localStorage.getItem("tema") === "dark") root.dataset.theme = "dark"; } catch {}
+const fbBtn = () => `<button class="theme" data-fb="">Feedback</button>`;
 const themeBtn = () => `<button class="theme" data-toggle-theme>${root.dataset.theme === "dark" ? "Tema claro" : "Tema escuro"}</button>`;
 app.addEventListener("click", e => {
   const b = e.target.closest("[data-toggle-theme]"); if (!b) return;
@@ -278,7 +344,7 @@ app.addEventListener("click", e => {
 function intro() {
   clearInterval(tick);
   app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
-    <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div><div class="top-actions">${starBtn()}${themeBtn()}</div></div>
+    <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <h1>Simulado Eixo Prova</h1>
     <div class="sheet">
       <h2>Escolha a prova</h2>
@@ -565,7 +631,7 @@ function finish(timeout, early = false) {
   saveAttempt({ at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, early, trocas: s.trocas, levels: s.lvs });
   let num = 0;
   app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
-    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div><div class="top-actions">${starBtn()}${themeBtn()}</div></div>
+    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <div class="sheet">
       <div class="score"><span class="big">${total.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
       ${s.trocas ? `<p class="elim">Você saiu da tela da prova ${s.trocas} ${s.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
@@ -591,6 +657,7 @@ function finish(timeout, early = false) {
           <div class="res">
             <span>${off ? "" : `Sua resposta: <b>${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b>${L[q.ans]}</b></span>
             ${q.sol ? `<details><summary>Ver resolução</summary><div class="page"><img src="img/${q.id}s.png" alt="Resolução" loading="lazy"></div></details>` : ""}
+            <button class="fb-link" data-fb="Prova ${s.p} · questão ${num} (${q.id})">Achou um erro nesta questão?</button>
           </div>
         </section>`;
       }).join("")}`).join("")}
@@ -603,7 +670,76 @@ const saved = loadProgress();
 if (saved) {
   s = saved; s.trocas = (s.trocas || 0) + 1; // atualizar a página conta como saída da tela
   if (Date.now() >= s.end) timeUp(); else { tick = setInterval(clock, 1000); renderBlock(); }
-} else intro();
+} else { intro(); welcome(); }
+
+function welcome() {
+  try { if (localStorage.getItem("boasVindas")) return; } catch {}
+  const d = document.createElement("dialog");
+  d.className = "welcome";
+  d.setAttribute("aria-labelledby", "welcome-title");
+  d.innerHTML = `
+    <h2 id="welcome-title">Bem-vindo ao Simulado Eixo Prova 👋</h2>
+    <p>Um simulador da prova de matemática e lógica do Inteli, com <b>questões reais</b> (2022.1 a 2025.1) e as regras do <b>edital 2027</b>.</p>
+    <ul class="rules">
+      <li><b>5 provas</b>, 2 delas <b>adaptativas</b> como a real</li>
+      <li>Correção na hora, com gabarito e <b>resolução oficial</b></li>
+      <li><b>Histórico</b> de notas e calculadora ENEM, SAT, ACT e IB</li>
+      <li>Achou um erro ou tem uma ideia? Botão <b>Feedback</b> no topo, sem login</li>
+    </ul>
+    <p class="note">Faça como no dia: 2 horas, lugar tranquilo e só calculadora básica.</p>
+    <p class="by">Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos. Se ajudar, deixa uma ⭐ no GitHub!</p>
+    <button class="primary" id="welcome-ok" autofocus>Bora treinar!</button>`;
+  // fecha pelo botão, clicando fora do cartão ou com Esc; a escolha fica salva para não aparecer de novo
+  const done = () => { try { localStorage.setItem("boasVindas", "1"); } catch {} if (d.open) d.close(); d.remove(); };
+  d.querySelector("#welcome-ok").onclick = done;
+  d.addEventListener("click", e => { if (e.target === d) done(); });
+  d.addEventListener("cancel", e => { e.preventDefault(); done(); });
+  document.body.appendChild(d);
+  d.showModal();
+}
+
+const FB_TIPOS = ["Sugestão", "Melhoria", "Erro em questão", "Bug"];
+// Google Forms "Feedback · Simulado Eixo Prova": ids dos campos tirados do próprio formulário
+const FB_FORM = { url: "https://docs.google.com/forms/d/e/1FAIpQLSeJvJi4_ECfUJO4B19YuZF9QtolHLzCV3ULQyutOfljrLfV9w", tipo: "entry.448938689", msg: "entry.1285465240", questao: "entry.274878571", disp: "entry.1436630446" };
+document.addEventListener("click", e => { const b = e.target.closest?.("[data-fb]"); if (b) feedback(b.dataset.fb); });
+function feedback(ctx) {
+  const d = document.createElement("dialog");
+  d.className = "welcome";
+  d.setAttribute("aria-labelledby", "fb-title");
+  d.innerHTML = `
+    <h2 id="fb-title">${ctx ? "Reportar erro" : "Mande seu feedback"}</h2>
+    <p>${ctx ? `<b>${ctx}</b>. Gabarito errado, imagem cortada, enunciado confuso: conte o que viu.` : "Sugestões, melhorias, erros ou bugs: tudo ajuda a deixar o simulado melhor."}</p>
+    <form style="display:grid;gap:10px">
+      <fieldset class="fb-tipos" aria-label="Tipo">${FB_TIPOS.map(t => `<label><input type="radio" name="tipo" value="${t}" ${t === (ctx ? "Erro em questão" : "Sugestão") ? "checked" : ""}>${t}</label>`).join("")}</fieldset>
+      <textarea name="msg" required maxlength="2000" aria-label="Mensagem" placeholder="Escreva aqui"></textarea>
+      <p class="by">Anônimo: não precisa de login. Vai junto só a questão (se houver), o tamanho da tela e o navegador, para ajudar a achar bugs.</p>
+      <div class="fb-acts"><button type="button" data-close>Cancelar</button><button class="primary">Enviar</button></div>
+    </form>`;
+  const form = d.querySelector("form"), done = () => { if (d.open) d.close(); d.remove(); };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const msg = form.msg.value.trim();
+    if (!msg) return form.msg.focus();
+    const data = new URLSearchParams({ [FB_FORM.tipo]: form.tipo.value, [FB_FORM.msg]: msg, [FB_FORM.questao]: ctx, [FB_FORM.disp]: `${innerWidth}×${innerHeight} · ${navigator.userAgent}` });
+    form.querySelector(".primary").disabled = true;
+    try {
+      // no-cors: o Google não deixa ler a resposta, mas grava; só uma falha de rede cai no catch
+      await fetch(`${FB_FORM.url}/formResponse`, { method: "POST", mode: "no-cors", body: data });
+      d.innerHTML = `<h2 id="fb-title">Valeu pelo feedback! 💜</h2><p>Recebido. Cada sugestão ajuda os próximos futuros Intelers.</p><button class="primary" data-close>Fechar</button>`;
+    } catch {
+      // sem conexão com o Google: abre o formulário já preenchido para enviar por lá
+      window.open(`${FB_FORM.url}/viewform?usp=pp_url&${data}`, "_blank", "noopener");
+      done(); return;
+    }
+    d.querySelector("[data-close]").onclick = done;
+  };
+  d.querySelector("[data-close]").onclick = done;
+  d.addEventListener("click", e => { if (e.target === d) done(); });
+  d.addEventListener("cancel", e => { e.preventDefault(); done(); });
+  document.body.appendChild(d);
+  d.showModal();
+  form.msg.focus();
+}
 </script>
 </body>
 </html>
