@@ -54,6 +54,12 @@ h2{font-size:1.4rem;font-weight:600}
 .credit{font:.85rem/1.5 var(--ui);color:var(--muted);text-align:center;padding-block:8px 0}
 .credit a{color:var(--accent);font-weight:600;text-decoration:none}
 .credit a:hover,.credit a:focus-visible{text-decoration:underline}
+.credit{display:grid;justify-items:center;gap:10px}
+a.star{display:inline-flex;align-items:center;gap:8px;font:600 .9rem var(--ui);color:var(--ink);text-decoration:none;padding:9px 16px;border:1px solid var(--line);border-radius:99px;background:var(--paper)}
+a.star:hover,a.star:focus-visible{border-color:#e3a008;text-decoration:none}
+a.star>span:first-child{color:#e3a008;font-size:1.05rem}
+a.star .count{font-variant-numeric:tabular-nums;padding-left:8px;border-left:1px solid var(--line);color:var(--muted)}
+a.star .count:empty{display:none}
 button{font:600 .95rem var(--ui);border-radius:8px;cursor:pointer;padding:10px 18px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -197,6 +203,16 @@ let equiv = { ex: "enem", nota: "", nivel: "HL" };
 
 const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 let s, tick, chosen = PROVAS[0].id;
+
+const REPO = "luizgustavo664/Simulado-Eixo-Prova-Inteli";
+let stars = null;
+const starBtn = () => `<a class="star" href="https://github.com/${REPO}" target="_blank" rel="noopener"><span aria-hidden="true">★</span> Deixe uma estrela no GitHub<span class="count" data-stars>${stars ?? ""}</span></a>`;
+// contagem de estrelas pela API pública do GitHub; se falhar (sem rede, limite, visualizador bloqueia), o botão fica sem número
+fetch(`https://api.github.com/repos/${REPO}`).then(r => r.ok ? r.json() : null).then(d => {
+  if (!(d?.stargazers_count > 0)) return; // com 0 estrelas o botão fica sem número
+  stars = d.stargazers_count;
+  document.querySelectorAll("[data-stars]").forEach(el => el.textContent = stars);
+}).catch(() => {});
 const app = document.getElementById("app");
 
 // histórico: no db privado de cada pessoa (data/users/<id>); sem db (arquivo local, sem login), fica no navegador
@@ -271,7 +287,7 @@ function intro() {
     </div>
     <div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
     <div class="sheet" id="equiv"></div>
-    <footer class="credit">Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</footer></div>`;
+    <footer class="credit">${starBtn()}<span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</span></footer></div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = instructions;
@@ -551,7 +567,7 @@ function finish(timeout, early = false) {
         <span class="kv">Saídas da tela <b>${s.trocas}</b></span>
       </div>
       <p class="note">Não existe nota de corte fixa: o corte muda a cada ano conforme os candidatos (são chamados para a próxima etapa pelo menos 3 vezes o número de vagas). Os 10 acertos que aparecem no edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</p>
-      <div><button class="primary" id="again">Ver histórico e fazer outra prova</button></div>
+      <div class="nav"><button class="primary" id="again">Ver histórico e fazer outra prova</button>${starBtn()}</div>
     </div>
     ${s.res.map(r => `<h2>Bloco ${r.b + 1} ${trackName(r.b, r.lv) ? `<span class="trk">${trackName(r.b, r.lv)}</span>` : ""}</h2>
       ${r.qs.map((q, i) => {
