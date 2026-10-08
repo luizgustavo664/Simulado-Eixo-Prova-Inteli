@@ -61,7 +61,8 @@ h2{font-size:1.4rem;font-weight:600}
 .credit a{color:var(--accent);font-weight:600;text-decoration:none}
 .credit a:hover,.credit a:focus-visible{text-decoration:underline}
 .credit{display:grid;justify-items:center;gap:10px}
-a.star{display:inline-flex;align-items:center;gap:8px;font:600 .9rem var(--ui);color:var(--ink);text-decoration:none;padding:9px 16px;border:1px solid var(--line);border-radius:99px;background:var(--paper)}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+a.star{display:inline-flex;align-items:center;gap:8px;font:600 .8rem var(--ui);color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--paper)}
 a.star:hover,a.star:focus-visible{border-color:#e3a008;text-decoration:none}
 a.star>span:first-child{color:#e3a008;font-size:1.05rem}
 a.star .count{font-variant-numeric:tabular-nums;padding-left:8px;border-left:1px solid var(--line);color:var(--muted)}
@@ -277,7 +278,7 @@ app.addEventListener("click", e => {
 function intro() {
   clearInterval(tick);
   app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
-    <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div>${themeBtn()}</div>
+    <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div><div class="top-actions">${starBtn()}${themeBtn()}</div></div>
     <h1>Simulado Eixo Prova</h1>
     <div class="sheet">
       <h2>Escolha a prova</h2>
@@ -295,7 +296,7 @@ function intro() {
     </div>
     <div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
     <div class="sheet" id="equiv"></div>
-    <footer class="credit">${starBtn()}<span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</span></footer></div>`;
+    <footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</span></footer></div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = instructions;
@@ -564,7 +565,7 @@ function finish(timeout, early = false) {
   saveAttempt({ at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, early, trocas: s.trocas, levels: s.lvs });
   let num = 0;
   app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
-    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div>${themeBtn()}</div>
+    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div><div class="top-actions">${starBtn()}${themeBtn()}</div></div>
     <div class="sheet">
       <div class="score"><span class="big">${total.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
       ${s.trocas ? `<p class="elim">Você saiu da tela da prova ${s.trocas} ${s.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
@@ -575,7 +576,7 @@ function finish(timeout, early = false) {
         <span class="kv">Saídas da tela <b>${s.trocas}</b></span>
       </div>
       <p class="note">Não existe nota de corte fixa: o corte muda a cada ano conforme os candidatos (são chamados para a próxima etapa pelo menos 3 vezes o número de vagas). Os 10 acertos que aparecem no edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</p>
-      <div class="nav"><button class="primary" id="again">Ver histórico e fazer outra prova</button>${starBtn()}</div>
+      <div><button class="primary" id="again">Ver histórico e fazer outra prova</button></div>
     </div>
     ${s.res.map(r => `<h2>Bloco ${r.b + 1} ${trackName(r.b, r.lv) ? `<span class="trk">${trackName(r.b, r.lv)}</span>` : ""}</h2>
       ${r.qs.map((q, i) => {
