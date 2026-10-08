@@ -27,6 +27,7 @@
   --discard:#f0b155; --discard-bg:#2e2412;
   --ok:#6fd39a; --ok-bg:#12291c; --bad:#ff8a80; --bad-bg:#33171a; color-scheme:dark}
 .theme{font-size:.8rem;padding:6px 12px;border-radius:99px;white-space:nowrap}
+.bar .end.armed{background:var(--accent);border-color:var(--accent);color:#fff}
 .bar .theme{background:transparent;border-color:var(--bar-line);color:var(--bar-ink)}
 .hist{width:100%;border-collapse:collapse;font:.88rem var(--ui);font-variant-numeric:tabular-nums}
 .hist th{font:600 .7rem var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
@@ -281,7 +282,7 @@ function intro() {
     <footer class="credit">Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</footer></div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
-  document.getElementById("go").onclick = start;
+  document.getElementById("go").onclick = instructions;
 }
 
 // edital 5.1.5: a plataforma registra cada saída da tela da prova (trocar de aba ou janela, atualizar a página)
@@ -359,6 +360,41 @@ function renderEquivOut() {
        <p class="note">Os 10 acertos são só a régua de equivalência do edital, não a nota de corte: o corte muda a cada ano conforme os candidatos, e já houve aprovação com 8 acertos. Se você fizer a prova e também enviar o ${e.nome}, vale a maior nota.${best ? ` Seu melhor no simulado até agora: ${best} acertos.` : ""}</p>`;
 }
 
+function instructions() {
+  const adapt = prova(chosen).adapt;
+  app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
+    <div class="top"><div class="eyebrow">Prova ${chosen} · ${prova(chosen).desc}</div>${themeBtn()}</div>
+    <h1>Antes de começar</h1>
+    <div class="sheet">
+      <ul class="rules">
+        <li><b>120 minutos</b> para 24 questões em 4 blocos (8, 6, 6 e 4). O cronômetro começa assim que você clicar em "Começar agora".</li>
+        <li>Em cada bloco, <b>descarte exatamente 1 questão</b> e responda as outras. Sem descarte, 1 questão que você acertou é desconsiderada; descartes a mais e questões em branco contam como erro. A plataforma não avisa.</li>
+        <li>Use <b>Voltar</b> e <b>Avançar</b> no rodapé (ou as setas do teclado) para passar as questões. As bolinhas no topo mostram o que está respondido (verde), descartado (laranja) e em branco.</li>
+        <li>${adapt ? "<b>Bloco enviado não volta.</b> O desempenho em cada bloco define a dificuldade do próximo." : "Esta prova não tem trilha: dá para ir e voltar entre os blocos até finalizar."}</li>
+        <li>Sair da tela da prova (trocar de aba ou janela, atualizar a página) fica registrado.</li>
+        <li>Só calculadora básica. Nada de científica ou celular.</li>
+      </ul>
+      <p class="elim"><b>Depois de começar, não dá para voltar a esta tela.</b> A prova continua mesmo se você fechar ou atualizar a página. Se quiser sair antes do fim, use <b>Encerrar prova</b> na barra do topo: a prova é finalizada e corrigida com o que você já respondeu.</p>
+      <div class="nav"><button id="back">← Escolher outra prova</button><button class="primary" id="begin">Começar agora</button></div>
+    </div></div>`;
+  document.getElementById("back").onclick = intro;
+  document.getElementById("begin").onclick = start;
+  window.scrollTo(0, 0);
+}
+
+// encerrar antes do fim: confirma com um segundo clique (o visualizador não mostra confirm())
+let endArmed = 0;
+function endNow(btn) {
+  if (!endArmed) {
+    btn.textContent = "Confirmar encerramento"; btn.classList.add("armed");
+    endArmed = setTimeout(() => { endArmed = 0; btn.textContent = "Encerrar prova"; btn.classList.remove("armed"); }, 4000);
+    return;
+  }
+  clearTimeout(endArmed); endArmed = 0;
+  if (free()) closeAll(); else closeBlock();
+  finish(false, true);
+}
+
 function start() {
   s = { p: chosen, b: 0, lvs: [], ups: 0, res: [], trocas: 0, end: Date.now() + DURATION };
   if (!prova(s.p).adapt) s.blocks = [0, 1, 2, 3].map(b => ({ qs: pool(s.p, b, 0), ans: {}, disc: [], cur: 0 }));
@@ -410,7 +446,7 @@ function renderBlock() {
         : `<div class="blk ${b < s.b ? "done" : b === s.b ? "now" : ""}">Bloco ${b + 1}</div>`).join("")}</div>
       <div class="dots" id="dots" aria-label="Situação das questões do bloco"></div>
       <span class="trocas" id="trocas" role="status"></span>
-      <div class="timer" id="timer" aria-label="Tempo restante">120:00</div>${themeBtn()}
+      <div class="timer" id="timer" aria-label="Tempo restante">120:00</div><button class="theme end" id="end">Encerrar prova</button>${themeBtn()}
     </div></div>
     <div class="wrap exam">
       <div class="qs" id="slide"></div>
@@ -427,6 +463,7 @@ function renderBlock() {
   document.getElementById("next").onclick = () => go(s.cur + 1);
   document.getElementById("disc").onclick = () => { const i = s.cur; s.disc = s.disc.includes(i) ? s.disc.filter(k => k !== i) : [...s.disc, i]; renderSlide(); };
   document.getElementById("send").onclick = send;
+  document.getElementById("end").onclick = e => endNow(e.currentTarget);
   app.querySelectorAll("[data-blk]").forEach(x => x.onclick = () => switchBlock(+x.dataset.blk));
   renderSlide(); clock(); showTrocas();
 }
@@ -504,14 +541,14 @@ function timeUp() {
   finish(true);
 }
 
-function finish(timeout) {
+function finish(timeout, early = false) {
   clearInterval(tick); s.done = true; clearProgress();
   const total = Math.min(100, s.res.reduce((a, r) => a + r.pts, 0)), hits = s.res.reduce((a, r) => a + r.c, 0);
   const used = Math.round((DURATION - Math.max(0, s.end - Date.now())) / 6e4);
-  saveAttempt({ at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, trocas: s.trocas, levels: s.lvs });
+  saveAttempt({ at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, early, trocas: s.trocas, levels: s.lvs });
   let num = 0;
   app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
-    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : "finalizada"} · ${used} min usados</div>${themeBtn()}</div>
+    <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div>${themeBtn()}</div>
     <div class="sheet">
       <div class="score"><span class="big">${total.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
       ${s.trocas ? `<p class="elim">Você saiu da tela da prova ${s.trocas} ${s.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
