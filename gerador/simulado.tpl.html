@@ -155,6 +155,8 @@ button.blk.now{background:var(--accent);border-color:var(--accent);color:#fff}
 .elim{margin:0;padding:12px 14px;border-radius:10px;background:var(--bad-bg);color:var(--bad);font:.92rem/1.5 var(--ui)}
 
 .score{display:flex;gap:24px;flex-wrap:wrap;align-items:baseline}
+.verdict{margin:0;font:1rem/1.5 var(--ui)}
+.verdict b{display:block;font:700 1.3rem/1.3 var(--display);margin-bottom:2px}
 .big{font:700 3.5rem/1 var(--display)}
 .kv{font:.9rem var(--ui);color:var(--muted)}
 .kv b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -616,6 +618,14 @@ function timeUp() {
   finish(true);
 }
 
+// mensagem pelo número de acertos, que é o que o edital usa como referência (10, e já passaram com 8)
+const VEREDITOS = [
+  [15, "Futuro Inteler! 🚀", "Desempenho excelente, bem acima da referência do edital. Tente as outras provas para confirmar."],
+  [10, "Mandou bem! 🎉", "Acima dos 10 acertos de referência do edital. Continue treinando para manter o ritmo no dia."],
+  [8, "Na briga! 🔥", "Já houve aprovação com 8 acertos. Revise o que errou e você ganha folga."],
+  [5, "Tá chegando lá 📈", "Perto da faixa de referência (8 a 10 acertos). As resoluções abaixo mostram onde focar."],
+  [0, "Podemos melhorar 💪", "Todo mundo começa de algum lugar. Revise as resoluções abaixo, uma por uma, e tente de novo."],
+];
 function finish(timeout, early = false) {
   clearInterval(tick); s.done = true; clearProgress();
   const total = Math.min(100, s.res.reduce((a, r) => a + r.pts, 0)), hits = s.res.reduce((a, r) => a + r.c, 0);
@@ -626,6 +636,7 @@ function finish(timeout, early = false) {
     <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <div class="sheet">
       <div class="score"><span class="big">${total.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
+      ${(([, t, m]) => `<p class="verdict"><b>${t}</b>${m}</p>`)(VEREDITOS.find(([n]) => hits >= n))}
       ${s.trocas ? `<p class="elim">Você saiu da tela da prova ${s.trocas} ${s.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
       ${s.res.some(r => r.penalty) ? `<p class="note">Sem descarte em ${s.res.filter(r => r.penalty).map(r => "bloco " + (r.b + 1)).join(", ")}: 1 acerto foi desconsiderado em cada um, como manda o edital.</p>` : ""}
       <div class="score">
