@@ -50,6 +50,9 @@ h2{font-size:1.4rem;font-weight:600}
 .sheet{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;gap:16px;min-width:0}
 .rules{margin:0;padding-left:1.2em;display:grid;gap:6px}
 .note{font:.85rem/1.5 var(--ui);color:var(--muted);margin:0}
+.credit{font:.85rem/1.5 var(--ui);color:var(--muted);text-align:center;padding-block:8px 0}
+.credit a{color:var(--accent);font-weight:600;text-decoration:none}
+.credit a:hover,.credit a:focus-visible{text-decoration:underline}
 button{font:600 .95rem var(--ui);border-radius:8px;cursor:pointer;padding:10px 18px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -266,7 +269,8 @@ function intro() {
       <div><button class="primary" id="go">Começar prova ${chosen}</button></div>
     </div>
     <div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
-    <div class="sheet" id="equiv"></div></div>`;
+    <div class="sheet" id="equiv"></div>
+    <footer class="credit">Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</footer></div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = start;
