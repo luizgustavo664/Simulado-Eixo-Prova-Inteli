@@ -1,0 +1,13 @@
+{
+  "name": "simulado-eixo-prova",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulado não oficial do Eixo Prova do processo seletivo do Inteli, montado com as questões dos cadernos de prova.",
+  "type": "module",
+  "scripts": {
+    "build": "node gerador/gerar-banco.mjs"
+  },
+  "devDependencies": {
+    "mupdf": "1.28.1"
+  }
+}
