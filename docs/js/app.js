@@ -28,7 +28,7 @@ async function saveAttempt(rec) {
   saveLocal();
 }
 // 5 tentativas por página; a página fica guardada ao abrir uma correção e voltar
-const HIST_PAGE = 5;
+const HIST_PAGE = 4;
 let histPage = 0;
 function renderHistory() {
   const el = document.getElementById("hist"), pager = document.getElementById("pager"); if (!el) return;
