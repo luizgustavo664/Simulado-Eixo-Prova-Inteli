@@ -31,7 +31,8 @@ async function saveAttempt(rec) {
 const HIST_PAGE = 5;
 let histPage = 0;
 function renderHistory() {
-  const el = document.getElementById("hist"); if (!el) return;
+  const el = document.getElementById("hist"), pager = document.getElementById("pager"); if (!el) return;
+  pager.innerHTML = "";
   if (!hist.ready) { el.innerHTML = `<p class="note">Carregando suas tentativas…</p>`; return; }
   if (!hist.list.length) { el.innerHTML = `<p class="note">Nenhuma tentativa ainda. Sua nota aparece aqui quando você terminar uma prova.</p>`; return; }
   const best = {}; hist.list.forEach(r => { if (!r.eliminated) best[r.prova] = Math.max(best[r.prova] ?? 0, r.score); });
@@ -47,11 +48,11 @@ function renderHistory() {
       <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span class="bad">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
       <td class="num" data-l="acertos">${r.hits}/20</td><td class="num">${r.minutes} min</td><td class="num" data-l="${r.trocas === 1 ? "saída" : "saídas"}">${r.trocas ?? "–"}</td>
       <td class="num">${canView(r) ? `<button class="ver" data-ver="${start + i}">Ver</button>` : ""}</td></tr>`).join("")}</tbody></table></div>
-    <div class="hist-foot"><p class="note">★ melhor nota em cada prova. ${hist.where}</p>${pages > 1 ? `
-      <div class="pager"><button data-pg="-1" aria-label="Tentativas mais recentes" ${histPage ? "" : "disabled"}>‹</button>
-        <span>${histPage + 1} de ${pages}</span>
-        <button data-pg="1" aria-label="Tentativas mais antigas" ${histPage < pages - 1 ? "" : "disabled"}>›</button></div>` : ""}</div>`;
-  el.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => { histPage += +b.dataset.pg; renderHistory(); });
+    <p class="note">★ melhor nota em cada prova. ${hist.where}</p>`;
+  if (pages > 1) pager.innerHTML = `<button data-pg="-1" aria-label="Tentativas mais recentes" ${histPage ? "" : "disabled"}>‹</button>
+    <span>${histPage + 1} de ${pages}</span>
+    <button data-pg="1" aria-label="Tentativas mais antigas" ${histPage < pages - 1 ? "" : "disabled"}>›</button>`;
+  pager.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => { histPage += +b.dataset.pg; renderHistory(); });
   el.querySelectorAll("[data-ver]").forEach(b => b.onclick = () => showResult(hist.list[+b.dataset.ver]));
 }
 const fmtDate = at => new Date(at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -87,7 +88,7 @@ function intro() {
       <p class="note">As trilhas seguem a ordem dos cadernos oficiais. Os pesos de pontuação são estimados, então use a nota como referência.</p>
       <div><button class="primary" id="go">Começar prova ${chosen}</button></div>
     </div>
-    <div class="side"><div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
+    <div class="side"><div class="sheet"><div class="hist-head"><h2>Suas tentativas</h2><div class="pager" id="pager"></div></div><div id="hist"></div></div>
     <div class="sheet" id="equiv"></div></div></div>
     <footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer></div>`;
   renderHistory(); renderEquiv();
