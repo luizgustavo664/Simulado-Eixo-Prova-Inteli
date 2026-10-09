@@ -63,6 +63,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .hist td{padding:8px;border-bottom:1px solid var(--line)}
 .hist td.n{font-weight:600}
 .hist .bad{color:var(--bad)}
+.hist .ver{padding:4px 12px;font-size:.8rem}
+.hist-foot{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.pager{display:flex;align-items:center;gap:8px;margin-left:auto;font:500 .8rem var(--ui);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pager button{width:28px;height:28px;padding:0;border-radius:50%;font-size:1rem;line-height:1}
+.pager button:disabled{opacity:.35;cursor:default}
 .hist .num{text-align:right}
 .hist tr.hit td{background:var(--ok-bg);color:var(--ok);font-weight:600}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -190,7 +195,6 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
 /* ---------- celular ---------- */
 @media (max-width:560px){
   .sheet{padding:16px}
-  /* tentativas: cada linha vira um cartão (prova e nota em cima; data, acertos, tempo e saídas embaixo) */
   /* prova: barra em 2 linhas (blocos + cronômetro; bolinhas + encerrar) e rodapé em 1; tema só fora da prova */
   .lg{display:none}
   .bar .in{gap:6px 8px}
@@ -206,10 +210,19 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
   .foot .nav{gap:6px;flex-wrap:nowrap}
   .foot button{padding:8px 10px;font-size:.85rem}
   #send{flex:1}
+}
+
+/* tentativas: em espaço estreito (celular ou coluna lateral do desktop) cada linha vira um cartão:
+   prova, nota e Ver em cima; data, acertos, tempo e saídas embaixo */
+#hist{container-type:inline-size}
+@container (max-width:560px){
   .tent thead{display:none}
   .tent tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
   .tent td{padding:0;border:0;color:var(--muted);font-size:.8rem}
-  .tent td:nth-child(2){order:-2;flex:1 0 60%;color:var(--ink);font-weight:600;font-size:.95rem}
+  .tent td:nth-child(2){order:-2;flex:1;color:var(--ink);font-weight:600;font-size:.95rem}
   .tent td.n{order:-1;color:var(--ink);font-size:.95rem}
+  .tent td:last-child{order:-1}
+  .tent td:last-child:empty{display:none}
+  .tent tr::after{content:"";order:-1;flex-basis:100%} /* quebra de linha depois de prova, nota e Ver */
   .tent td[data-l]::after{content:" " attr(data-l)}
 }

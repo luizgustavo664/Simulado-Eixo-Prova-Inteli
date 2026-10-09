@@ -17,7 +17,7 @@ Para publicar no GitHub Pages: **Settings → Pages → Deploy from a branch →
 - **Provas 2022.1, 2022.2 e 2023.1** com as 24 questões fixas da época; nelas dá para voltar entre os blocos.
 - **Regras do edital**: descarte de 1 questão por bloco (sem descarte, 1 acerto é desconsiderado), 120 minutos, contagem de saídas da tela, prova retomada se a página for atualizada.
 - **Resultado e revisão** com gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
-- **Histórico de notas** e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
+- **Histórico de notas** (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
 
 ## Estrutura
 
