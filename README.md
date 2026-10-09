@@ -22,12 +22,17 @@ Para publicar no GitHub Pages: **Settings → Pages → Deploy from a branch →
 ## Estrutura
 
 ```
-docs/                    site pronto (é o que vai para o ar)
-  index.html             página com o banco de questões embutido
-  img/                   recortes: <id>.png (questão) e <id>s.png (resolução)
+docs/                    site (é o que vai para o ar)
+  index.html             página: só a estrutura e a ordem dos scripts
+  css/style.css          estilos (tema claro/escuro, prova, resultado, diálogos)
+  js/banco.js            banco de questões, gerado pelo build (não edite à mão)
+  js/regras.js           provas, pontuação, correção e equivalência ENEM/SAT/ACT/IB
+  js/estrela.js          botão de estrela do GitHub e mascote
+  js/dialogos.js         boas-vindas e feedback
+  js/app.js              telas: início, instruções, prova e resultado
+  img/                   recortes: <id>.png (questão) e <id>s.png (resolução), gerados pelo build
 gerador/
-  gerar-banco.mjs        lê os PDFs, recorta as questões e monta docs/
-  simulado.tpl.html      modelo da página (HTML, CSS e JS do simulado)
+  gerar-banco.mjs        lê os PDFs, recorta as questões e gera docs/img e docs/js/banco.js
 provas/                  PDFs originais (fora do git, ver .gitignore)
 ```
 
@@ -46,7 +51,9 @@ npm install
 npm run build
 ```
 
-Para mudar só a página (estilo, regras, textos), edite `gerador/simulado.tpl.html` e rode o build de novo.
+Para mudar só a página (estilo, regras, textos), edite os arquivos de `docs/` direto: não precisa de build. O build só é necessário quando os PDFs ou os ajustes do banco mudam.
+
+Os scripts são comuns (não módulos ES) para a página abrir direto do arquivo, sem servidor. Eles compartilham variáveis globais, então a ordem em `index.html` importa: `banco.js` → `regras.js` → `estrela.js` → `dialogos.js` → `app.js`.
 
 ### Como o banco é montado
 

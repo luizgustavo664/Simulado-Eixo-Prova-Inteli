@@ -1,5 +1,5 @@
 // Gera o site em docs/: recorta cada questão dos PDFs em provas/ (enunciado+alternativas e resolução) em PNG
-// e monta docs/index.html a partir de gerador/simulado.tpl.html com o banco de questões embutido.
+// e escreve o banco de questões em docs/js/banco.js. A página (index.html, css/, js/) é editada direto em docs/.
 // Uso: npm run build
 import * as mupdf from "mupdf"; import fs from "fs"; import { fileURLToPath } from "url";
 const ROOT = new URL("../", import.meta.url), DIR = new URL("provas/", ROOT);
@@ -192,19 +192,9 @@ adaptive("Gabarito-Final-Prova-PS-2025.1-3.pdf", "2025.1", [
   [[29,30,31,32,33,34],[35,37,39,40,41,42],[43,45,47,48,49,51]],
   [[52,53,54,55],[56,58,60,61],[63,65,67,68],[69,71,73,75]],
 ], 60);
-// página: banco embutido no modelo; o que vem antes de <div id="app"> (título, fontes, estilos) vai para o <head>
 const data = bank.map(({ id, prova, b, lv, ar, opts, ans, lettered, sol }) => ({ id, prova, b, lv, ar, opts, ans, lettered, sol }));
-const page = fs.readFileSync(new URL("simulado.tpl.html", import.meta.url), "utf8").replace("/*BANK*/[]", JSON.stringify(data));
-const cut = page.indexOf('<div id="app">');
-fs.writeFileSync(OUT + "/index.html", `<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>body{margin:0}</style>
-${page.slice(0, cut)}</head>
-<body>
-${page.slice(cut)}</body>
-</html>
+fs.writeFileSync(OUT + "/js/banco.js", `// Gerado por npm run build (gerador/gerar-banco.mjs), não edite à mão.
+// Cada questão é um recorte (img/<id>.png) com a posição [x, y] de cada alternativa.
+const BANK = ${JSON.stringify(data)};
 `);
 console.log(bank.length, "questões ->", OUT);
