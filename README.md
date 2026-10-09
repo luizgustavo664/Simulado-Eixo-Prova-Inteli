@@ -10,6 +10,16 @@ Abra `docs/index.html` no navegador. É uma página estática, sem servidor nem 
 
 Para publicar no GitHub Pages: **Settings → Pages → Deploy from a branch → `main` / `docs`**.
 
+### Manutenção
+
+Para subir mudanças na `main` sem liberar o site ainda, ligue o aviso de manutenção no topo de `docs/js/app.js`:
+
+```js
+const MANUTENCAO = "hoje às 18:00"; // texto da volta; null libera o site
+```
+
+Com ele ligado, o site mostra só o aviso. Para testar a versão publicada antes de liberar, abra a URL com `?preview` no fim. Para liberar, troque a linha para `null` e faça o commit (dá pelo editor do próprio GitHub); o site atualiza em cerca de 1 minuto.
+
 ## O que tem
 
 - **186 questões reais** de 5 provas, recortadas dos PDFs como imagem para fórmulas e figuras ficarem iguais ao original.

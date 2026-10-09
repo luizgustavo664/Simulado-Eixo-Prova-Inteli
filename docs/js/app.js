@@ -2,6 +2,10 @@
 let equiv = { ex: "enem", nota: "", nivel: "HL" };
 let s, tick, chosen = PROVAS[0].id;
 const app = document.getElementById("app");
+// manutenção: texto da volta (ex.: "hoje às 18:00") mostra o aviso no lugar do simulado; null libera o site.
+// ?preview na URL ignora o aviso, para testar a versão publicada antes de liberar.
+const MANUTENCAO = "hoje às 18:00";
+const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer>`;
 
 // histórico: no db privado de cada pessoa (data/users/<id>); sem db (arquivo local, sem login), fica no navegador
 const hist = { list: [], ready: false, where: "" };
@@ -90,7 +94,7 @@ function intro() {
     </div>
     <div class="side"><div class="sheet"><div class="hist-head"><h2>Suas tentativas</h2><div class="pager" id="pager"></div></div><div id="hist"></div></div>
     <div class="sheet" id="equiv"></div></div></div>
-    <footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer></div>`;
+    ${CREDIT}</div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = instructions;
@@ -411,8 +415,22 @@ function showResult(rec, past = true) {
   window.scrollTo(0, 0);
 }
 
-const saved = loadProgress();
-if (saved) {
-  s = saved; s.trocas = (s.trocas || 0) + 1; // atualizar a página conta como saída da tela
-  if (Date.now() >= s.end) timeUp(); else { tick = setInterval(clock, 1000); renderBlock(); }
-} else { intro(); welcome(); }
+// manutenção ligada (e sem ?preview na URL): só o aviso; histórico e prova em andamento ficam salvos para quando liberar
+if (MANUTENCAO && !new URLSearchParams(location.search).has("preview")) maintenance();
+else {
+  const saved = loadProgress();
+  if (saved) {
+    s = saved; s.trocas = (s.trocas || 0) + 1; // atualizar a página conta como saída da tela
+    if (Date.now() >= s.end) timeUp(); else { tick = setInterval(clock, 1000); renderBlock(); }
+  } else { intro(); welcome(); }
+}
+function maintenance() {
+  app.innerHTML = `<div class="wrap stack">
+    <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div>${themeBtn()}</div>
+    <h1>Em manutenção 🛠</h1>
+    <div class="sheet">
+      <p class="verdict"><b>Estamos atualizando o simulado.</b>Volta ${MANUTENCAO}.</p>
+      <p class="note">Seu histórico e uma prova em andamento continuam salvos neste navegador.</p>
+    </div>
+    ${CREDIT}</div>`;
+}
