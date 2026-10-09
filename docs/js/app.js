@@ -33,12 +33,13 @@ function renderHistory() {
   if (!hist.list.length) { el.innerHTML = `<p class="note">Nenhuma tentativa ainda. Sua nota aparece aqui quando você terminar uma prova.</p>`; return; }
   const best = {}; hist.list.forEach(r => { if (!r.eliminated) best[r.prova] = Math.max(best[r.prova] ?? 0, r.score); });
   const fmt = n => n.toFixed(1).replace(".", ",");
-  el.innerHTML = `<div class="scroll"><table class="hist">
+  // data-l: rótulo que aparece só no celular, onde cada tentativa vira um cartão sem cabeçalho
+  el.innerHTML = `<div class="scroll"><table class="hist tent">
     <thead><tr><th>Data</th><th>Prova</th><th class="num">Nota</th><th class="num">Acertos</th><th class="num">Tempo</th><th class="num">Saídas</th></tr></thead>
     <tbody>${hist.list.slice(0, 30).map(r => `<tr>
       <td>${new Date(r.at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</td>
       <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span style="color:var(--bad)">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
-      <td class="num">${r.hits}/20</td><td class="num">${r.minutes} min</td><td class="num">${r.trocas ?? "–"}</td></tr>`).join("")}</tbody></table></div>
+      <td class="num" data-l="acertos">${r.hits}/20</td><td class="num">${r.minutes} min</td><td class="num" data-l="${r.trocas === 1 ? "saída" : "saídas"}">${r.trocas ?? "–"}</td></tr>`).join("")}</tbody></table></div>
     <p class="note">★ melhor nota em cada prova. ${hist.where}</p>`;
 }
 
@@ -56,10 +57,10 @@ app.addEventListener("click", e => {
 
 function intro() {
   clearInterval(tick);
-  app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
+  app.innerHTML = `<div class="wrap home" style="display:grid;gap:20px">
     <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <h1>Simulado Eixo Prova</h1>
-    <div class="sheet">
+    <div class="cols"><div class="sheet">
       <h2>Escolha a prova</h2>
       <div class="provas">${PROVAS.map(p => `<button class="prova" data-p="${p.id}" aria-pressed="${p.id === chosen}"><b>${p.id}</b><span>${p.desc}</span></button>`).join("")}</div>
       <ul class="rules">
@@ -73,9 +74,9 @@ function intro() {
       <p class="note">As trilhas seguem a ordem dos cadernos oficiais. Os pesos de pontuação são estimados, então use a nota como referência.</p>
       <div><button class="primary" id="go">Começar prova ${chosen}</button></div>
     </div>
-    <div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
-    <div class="sheet" id="equiv"></div>
-    <footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos</span></footer></div>`;
+    <div class="side"><div class="sheet"><h2>Suas tentativas</h2><div id="hist"></div></div>
+    <div class="sheet" id="equiv"></div></div></div>
+    <footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer></div>`;
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = instructions;
@@ -183,7 +184,7 @@ let endArmed = 0;
 function endNow(btn) {
   if (!endArmed) {
     btn.textContent = "Confirmar encerramento"; btn.classList.add("armed");
-    endArmed = setTimeout(() => { endArmed = 0; btn.textContent = "Encerrar prova"; btn.classList.remove("armed"); }, 4000);
+    endArmed = setTimeout(() => { endArmed = 0; btn.innerHTML = 'Encerrar<span class="lg"> prova</span>'; btn.classList.remove("armed"); }, 4000);
     return;
   }
   clearTimeout(endArmed); endArmed = 0;
@@ -242,16 +243,16 @@ function renderBlock() {
         : `<div class="blk ${b < s.b ? "done" : b === s.b ? "now" : ""}">Bloco ${b + 1}</div>`).join("")}</div>
       <div class="dots" id="dots" aria-label="Situação das questões do bloco"></div>
       <span class="trocas" id="trocas" role="status"></span>
-      <div class="timer" id="timer" aria-label="Tempo restante">120:00</div><button class="theme end" id="end">Encerrar prova</button>${themeBtn()}
+      <div class="timer" id="timer" aria-label="Tempo restante">120:00</div><button class="theme end" id="end">Encerrar<span class="lg"> prova</span></button>${themeBtn()}
     </div></div>
     <div class="wrap exam">
       <div class="qs" id="slide"></div>
     </div>
     <div class="foot"><div class="in">
       <div class="nav">
-        <button id="prev">← Voltar</button>
+        <button id="prev" aria-label="Voltar">←<span class="lg"> Voltar</span></button>
         <button id="disc" class="disc"></button>
-        <button id="next">Avançar →</button>
+        <button id="next" aria-label="Avançar"><span class="lg">Avançar </span>→</button>
       </div>
       <button class="primary" id="send"></button>
     </div></div>`;
