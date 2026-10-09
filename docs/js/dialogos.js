@@ -38,7 +38,7 @@ function feedback(ctx) {
   d.innerHTML = `
     <h2 id="fb-title">${ctx ? "Reportar erro" : "Mande seu feedback"}</h2>
     <p>${ctx ? `<b>${ctx}</b>. Gabarito errado, imagem cortada, enunciado confuso: conte o que viu.` : "Sugestões, melhorias, erros ou bugs: tudo ajuda a deixar o simulado melhor."}</p>
-    <form style="display:grid;gap:10px">
+    <form>
       <fieldset class="fb-tipos" aria-label="Tipo">${FB_TIPOS.map(t => `<label><input type="radio" name="tipo" value="${t}" ${t === (ctx ? "Erro em questão" : "Sugestão") ? "checked" : ""}>${t}</label>`).join("")}</fieldset>
       <textarea name="msg" required maxlength="2000" aria-label="Mensagem" placeholder="Escreva aqui"></textarea>
       <p class="by">Anônimo: não precisa de login. Vai junto só a questão (se houver), o tamanho da tela e o navegador, para ajudar a achar bugs.</p>

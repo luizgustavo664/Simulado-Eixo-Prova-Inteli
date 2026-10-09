@@ -38,7 +38,7 @@ function renderHistory() {
     <thead><tr><th>Data</th><th>Prova</th><th class="num">Nota</th><th class="num">Acertos</th><th class="num">Tempo</th><th class="num">Saídas</th></tr></thead>
     <tbody>${hist.list.slice(0, 30).map(r => `<tr>
       <td>${new Date(r.at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</td>
-      <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span style="color:var(--bad)">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
+      <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span class="bad">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
       <td class="num" data-l="acertos">${r.hits}/20</td><td class="num">${r.minutes} min</td><td class="num" data-l="${r.trocas === 1 ? "saída" : "saídas"}">${r.trocas ?? "–"}</td></tr>`).join("")}</tbody></table></div>
     <p class="note">★ melhor nota em cada prova. ${hist.where}</p>`;
 }
@@ -57,7 +57,7 @@ app.addEventListener("click", e => {
 
 function intro() {
   clearInterval(tick);
-  app.innerHTML = `<div class="wrap home" style="display:grid;gap:20px">
+  app.innerHTML = `<div class="wrap stack home">
     <div class="top"><div class="eyebrow">Simulado não oficial · questões dos cadernos de prova do Inteli</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <h1>Simulado Eixo Prova</h1>
     <div class="cols"><div class="sheet">
@@ -159,7 +159,7 @@ function renderEquivOut() {
 
 function instructions() {
   const adapt = prova(chosen).adapt;
-  app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
+  app.innerHTML = `<div class="wrap stack">
     <div class="top"><div class="eyebrow">Prova ${chosen} · ${prova(chosen).desc}</div>${themeBtn()}</div>
     <h1>Antes de começar</h1>
     <div class="sheet">
@@ -352,7 +352,7 @@ function finish(timeout, early = false) {
   const used = Math.round((DURATION - Math.max(0, s.end - Date.now())) / 6e4);
   saveAttempt({ at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, early, trocas: s.trocas, levels: s.lvs });
   let num = 0;
-  app.innerHTML = `<div class="wrap" style="display:grid;gap:20px">
+  app.innerHTML = `<div class="wrap stack">
     <div class="top"><div class="eyebrow">Prova ${s.p} · ${timeout ? "tempo esgotado" : early ? "encerrada antes do fim" : "finalizada"} · ${used} min usados</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
     <div class="sheet">
       <div class="score"><span class="big">${total.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
