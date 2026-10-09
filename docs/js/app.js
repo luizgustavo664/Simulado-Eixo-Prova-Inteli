@@ -4,7 +4,7 @@ let s, tick, chosen = PROVAS[0].id;
 const app = document.getElementById("app");
 // manutenção: texto da volta (ex.: "hoje às 18:00") mostra o aviso no lugar do simulado; null libera o site.
 // ?preview na URL ignora o aviso, para testar a versão publicada antes de liberar.
-const MANUTENCAO = "hoje às 18:00";
+const MANUTENCAO = null;
 const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer>`;
 
 // histórico: no db privado de cada pessoa (data/users/<id>); sem db (arquivo local, sem login), fica no navegador
