@@ -14,6 +14,7 @@ let celebrateOnReturn = false;
 document.addEventListener("click", e => {
   const a = e.target.closest?.("a.star"); if (!a) return;
   try { localStorage.setItem("estrelou", "1"); } catch {}
+  evento("estrela", "Clicou na estrela do GitHub");
   celebrateOnReturn = true;
   setTimeout(() => { if (celebrateOnReturn && !document.hidden) welcomeBack(); }, 1500);
 });

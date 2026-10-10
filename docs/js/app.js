@@ -231,6 +231,7 @@ function start() {
   s = { p: chosen, b: 0, lvs: [], ups: 0, res: [], trocas: 0, dur, end: Date.now() + dur };
   const blocos = f.sizes ? montarProva(f, hist.list) : !f.adapt && [0, 1, 2, 3].map(b => pool(s.p, b, 0));
   if (blocos) s.blocks = blocos.map(qs => ({ qs, ans: {}, disc: [], cur: 0 }));
+  evento("inicio/" + s.p, "Começou: " + nome(s.p));
   tick = setInterval(clock, 1000);
   openBlock(); window.scrollTo(0, 0);
 }
@@ -356,6 +357,7 @@ document.addEventListener("click", e => {
   ampliar(pg);
 });
 function ampliar(pg) {
+  evento("ampliou", "Ampliou uma questão no celular");
   const d = document.createElement("dialog");
   d.className = "viewer";
   d.setAttribute("aria-label", "Questão ampliada");
@@ -419,6 +421,7 @@ function finish(timeout, early = false) {
     res: s.res.map(({ b, lv, c, n, excl, penalty, qs, ans, disc }) => ({ b, lv, c, n, excl, penalty, qs: ids(qs), ans, disc })) };
   rec.of = s.res.reduce((a, r) => a + r.n, 0);
   saveAttempt(rec);
+  evento("fim/" + s.p, `${timeout ? "Tempo esgotado" : early ? "Encerrou antes" : "Terminou"}: ${nome(s.p)}`);
   showResult(rec, false);
 }
 // correção de uma tentativa: a que acabou de terminar ou uma do histórico (past)

@@ -1,6 +1,8 @@
 // Diálogos: boas-vindas (só na primeira visita), novidades (uma vez por versão) e feedback enviado para o Google Forms.
 // a cada atualização: suba a VERSAO e troque a lista em novidades(); quem já visitou vê o aviso uma vez
 const VERSAO = "1.2";
+// eventos no GoatCounter (painel em luiz.goatcounter.com): só contagens, nada da pessoa; o script ignora o localhost
+const evento = (path, title) => { try { window.goatcounter?.count?.({ path, title, event: true }); } catch {} };
 const fbBtn = () => `<button class="theme" data-fb="">Feedback</button>`;
 
 // cartão modal: fecha pelo botão, clicando fora ou com Esc, e roda onDone
@@ -77,6 +79,7 @@ function feedback(ctx) {
     try {
       // no-cors: o Google não deixa ler a resposta, mas grava; só uma falha de rede cai no catch
       await fetch(`${FB_FORM.url}/formResponse`, { method: "POST", mode: "no-cors", body: data });
+      evento("feedback/" + form.tipo.value, "Feedback: " + form.tipo.value);
       d.innerHTML = `<h2 id="fb-title">Valeu pelo feedback! 💜</h2><p>Recebido. Cada sugestão ajuda os próximos futuros Intelers.</p><button class="primary" data-close>Fechar</button>`;
     } catch {
       // sem conexão com o Google: abre o formulário já preenchido para enviar por lá
