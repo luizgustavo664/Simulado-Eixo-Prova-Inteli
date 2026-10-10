@@ -5,7 +5,7 @@ const app = document.getElementById("app");
 // manutenção: texto da volta (ex.: "hoje às 18:00") mostra o aviso no lugar do simulado; null libera o site.
 // ?preview na URL ignora o aviso, para testar a versão publicada antes de liberar.
 const MANUTENCAO = null;
-const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.1</span></footer>`;
+const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.2</span></footer>`;
 
 // histórico: no db privado de cada pessoa (data/users/<id>); sem db (arquivo local, sem login), fica no navegador
 const hist = { list: [], ready: false, where: "" };
@@ -51,13 +51,22 @@ function renderHistory() {
       <td>${fmtDate(r.at)}</td>
       <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span class="bad">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
       <td class="num" data-l="acertos">${r.hits}/${r.of ?? 20}</td><td class="num">${r.minutes} min</td><td class="num" data-l="${r.trocas === 1 ? "saída" : "saídas"}">${r.trocas ?? "–"}</td>
-      <td class="num">${canView(r) ? `<button class="ver" data-ver="${start + i}">Ver</button>` : ""}</td></tr>`).join("")}</tbody></table></div>
+      <td class="num">${canView(r) ? `<button class="ver" data-ver="${start + i}">Ver</button>` : ""}${histCol ? "" : `<button class="del" data-del="${start + i}" aria-label="Apagar tentativa de ${fmtDate(r.at)}" title="Apagar tentativa">✕</button>`}</td></tr>`).join("")}</tbody></table></div>
     <p class="note">★ melhor nota em cada prova. ${hist.where}</p>`;
   if (pages > 1) pager.innerHTML = `<button data-pg="-1" aria-label="Tentativas mais recentes" ${histPage ? "" : "disabled"}>‹</button>
     <span>${histPage + 1} de ${pages}</span>
     <button data-pg="1" aria-label="Tentativas mais antigas" ${histPage < pages - 1 ? "" : "disabled"}>›</button>`;
   pager.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => { histPage += +b.dataset.pg; renderHistory(); });
   el.querySelectorAll("[data-ver]").forEach(b => b.onclick = () => showResult(hist.list[+b.dataset.ver]));
+  // apagar: o primeiro clique pede confirmação; a tela inicial é redesenhada porque "Meus erros" depende do histórico
+  // ponytail: só no histórico do navegador; no db da conta (histCol) os registros não guardam o id para apagar
+  el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    if (!b.classList.contains("armed")) {
+      b.classList.add("armed"); b.textContent = "Apagar?";
+      return setTimeout(() => { b.classList.remove("armed"); b.textContent = "✕"; }, 4000);
+    }
+    hist.list.splice(+b.dataset.del, 1); saveLocal(); intro();
+  });
 }
 const fmtDate = at => new Date(at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
