@@ -145,6 +145,8 @@ button.blk.now{background:var(--accent);border-color:var(--accent);color:#fff}
 .chip{font:600 .72rem var(--ui);letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:99px}
 .chip.ok{background:var(--ok-bg);color:var(--ok)}
 .chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.new{border:1px solid var(--line);color:var(--muted);padding:2px 9px}
+.qh-l{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
 .chip.off{background:var(--discard-bg);color:var(--discard)}
 .trk{font:600 .7rem var(--ui);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid currentColor;color:var(--muted)}
 .res{font:.9rem var(--ui);padding:12px 16px;border-top:1px solid var(--line);display:grid;gap:10px}

@@ -301,11 +301,13 @@ function renderBlock() {
   renderSlide(); clock(); showTrocas();
 }
 function go(i) { if (i < 0 || i >= s.qs.length) return; s.cur = i; renderSlide(); window.scrollTo(0, 0); }
+// formatos: mostra se a questão é inédita ou quantas vezes você já errou (pelo histórico, sem contar a prova atual)
+const marca = st => !st ? `<span class="chip new">Inédita</span>` : st.erros ? `<span class="chip bad">Errou ${st.erros}×</span>` : `<span class="chip ok">Já acertou</span>`;
 function renderSlide() {
   const i = s.cur, q = s.qs[i], off = s.disc.includes(i), n = offset(s.b) + i + 1;
   document.getElementById("slide").innerHTML = `
     <section class="q ${off ? "off" : ""}">
-      <div class="qh"><span class="qn">Questão ${n} · ${i + 1} de ${s.qs.length}</span><span class="qn">Prova ${q.prova} · bloco ${s.b + 1}${trackName(s.p, s.b, s.lvs[s.b]) ? " · " + trackName(s.p, s.b, s.lvs[s.b]) : ""}</span></div>
+      <div class="qh"><span class="qh-l"><span class="qn">Questão ${n} · ${i + 1} de ${s.qs.length}</span>${prova(s.p).sizes ? marca(errosPorQuestao(hist.list)[q.id]) : ""}</span><span class="qn">Prova ${q.prova} · bloco ${s.b + 1}${trackName(s.p, s.b, s.lvs[s.b]) ? " · " + trackName(s.p, s.b, s.lvs[s.b]) : ""}</span></div>
       ${page(q, j => s.ans[i] === j ? "on" : "", !off)}
       <div class="answers" role="group" aria-label="Resposta da questão ${n}">
         ${L.split("").map((l, j) => `<button class="opt" data-o="${j}" aria-pressed="${s.ans[i] === j}" ${off ? "disabled" : ""}>${l}</button>`).join("")}
