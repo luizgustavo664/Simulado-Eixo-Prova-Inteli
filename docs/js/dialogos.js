@@ -1,12 +1,28 @@
-// Diálogos: boas-vindas (só na primeira visita) e feedback enviado para o Google Forms.
+// Diálogos: boas-vindas (só na primeira visita), novidades (uma vez por versão) e feedback enviado para o Google Forms.
+// a cada atualização: suba a VERSAO e troque a lista em novidades(); quem já visitou vê o aviso uma vez
+const VERSAO = "1.2";
 const fbBtn = () => `<button class="theme" data-fb="">Feedback</button>`;
 
-function welcome() {
-  try { if (localStorage.getItem("boasVindas")) return; } catch {}
+// cartão modal: fecha pelo botão, clicando fora ou com Esc, e roda onDone
+function aviso(html, onDone) {
   const d = document.createElement("dialog");
   d.className = "welcome";
   d.setAttribute("aria-labelledby", "welcome-title");
-  d.innerHTML = `
+  d.innerHTML = html;
+  const done = () => { onDone(); if (d.open) d.close(); d.remove(); };
+  d.querySelector("#welcome-ok").onclick = done;
+  d.addEventListener("click", e => { if (e.target === d) done(); });
+  d.addEventListener("cancel", e => { e.preventDefault(); done(); });
+  document.body.appendChild(d);
+  d.showModal();
+}
+const lembrar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const lido = k => { try { return localStorage.getItem(k); } catch { return null; } };
+
+// primeira visita: boas-vindas (as novidades já estão nela); quem volta: novidades da versão, uma vez
+function welcome() {
+  if (lido("boasVindas")) return novidades();
+  aviso(`
     <h2 id="welcome-title">Bem-vindo ao Simulado Eixo Prova 👋</h2>
     <p>Um simulador da prova de matemática e lógica do Inteli, com <b>questões reais</b> (2022.1 a 2025.1) e as regras do <b>edital 2027</b>.</p>
     <ul class="rules">
@@ -17,14 +33,20 @@ function welcome() {
     </ul>
     <p class="note">Faça como no dia: 2 horas, lugar tranquilo e só calculadora básica.</p>
     <p class="by">Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos. Se ajudar, deixa uma ⭐ no GitHub!</p>
-    <button class="primary" id="welcome-ok" autofocus>Bora treinar!</button>`;
-  // fecha pelo botão, clicando fora do cartão ou com Esc; a escolha fica salva para não aparecer de novo
-  const done = () => { try { localStorage.setItem("boasVindas", "1"); } catch {} if (d.open) d.close(); d.remove(); };
-  d.querySelector("#welcome-ok").onclick = done;
-  d.addEventListener("click", e => { if (e.target === d) done(); });
-  d.addEventListener("cancel", e => { e.preventDefault(); done(); });
-  document.body.appendChild(d);
-  d.showModal();
+    <button class="primary" id="welcome-ok" autofocus>Bora treinar!</button>`, () => { lembrar("boasVindas", "1"); lembrar("novidades", VERSAO); });
+}
+function novidades() {
+  if (lido("novidades") === VERSAO) return;
+  aviso(`
+    <h2 id="welcome-title">Novidades da versão ${VERSAO} ✨</h2>
+    <ul class="rules">
+      <li><b>Meia prova</b>: 12 questões sorteadas de todas as provas, em 60 min</li>
+      <li><b>Meus erros</b>: uma prova com as questões que você mais errou, bloco a bloco</li>
+      <li>Em cada questão desses formatos, uma etiqueta mostra se ela é <b>inédita</b> ou quantas vezes você já <b>errou</b></li>
+      <li>Botão <b>✕</b> para apagar uma tentativa do histórico</li>
+    </ul>
+    <p class="note">Os novos formatos ficam em "Outros formatos", na tela inicial.</p>
+    <button class="primary" id="welcome-ok" autofocus>Bora testar!</button>`, () => lembrar("novidades", VERSAO));
 }
 
 const FB_TIPOS = ["Sugestão", "Melhoria", "Erro em questão", "Bug"];

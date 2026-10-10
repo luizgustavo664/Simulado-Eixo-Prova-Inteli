@@ -5,7 +5,7 @@ const app = document.getElementById("app");
 // manutenção: texto da volta (ex.: "hoje às 18:00") mostra o aviso no lugar do simulado; null libera o site.
 // ?preview na URL ignora o aviso, para testar a versão publicada antes de liberar.
 const MANUTENCAO = null;
-const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão 1.2</span></footer>`;
+const CREDIT = `<footer class="credit"><span>Criado por <a href="https://www.linkedin.com/in/luiz-cazelatto/" target="_blank" rel="noopener">Luiz Cazelatto</a>, de um aluno para futuros alunos <br> versão ${VERSAO}</span></footer>`;
 
 // histórico: no db privado de cada pessoa (data/users/<id>); sem db (arquivo local, sem login), fica no navegador
 const hist = { list: [], ready: false, where: "" };

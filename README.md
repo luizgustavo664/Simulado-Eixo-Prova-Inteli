@@ -20,6 +20,10 @@ const MANUTENCAO = "hoje às 18:00"; // texto da volta; null libera o site
 
 Com ele ligado, o site mostra só o aviso. Para testar a versão publicada antes de liberar, abra a URL com `?preview` no fim. Para liberar, troque a linha para `null` e faça o commit (dá pelo editor do próprio GitHub); o site atualiza em cerca de 1 minuto.
 
+### Aviso de novidades
+
+Quem já visitou o site vê, uma vez, um aviso com as novidades da versão. Para uma nova atualização, suba `VERSAO` em `docs/js/dialogos.js` (o rodapé usa o mesmo número) e troque a lista em `novidades()`. Quem chega pela primeira vez vê só as boas-vindas.
+
 ## O que tem
 
 - **186 questões reais** de 5 provas, recortadas dos PDFs como imagem para fórmulas e figuras ficarem iguais ao original.
