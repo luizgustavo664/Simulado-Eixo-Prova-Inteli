@@ -263,10 +263,12 @@ function clock() {
 const trackName = (p, b, lv) => b === 0 ? (nLevels(p, 0) > 1 ? `versão ${lv + 1}` : "") : nLevels(p, b) > 1 ? `nível ${lv + 1} de ${nLevels(p, b)}` : "";
 
 // recorte da questão com as letras posicionadas sobre cada alternativa
-const ZOOM = { l: 0.045, w: 0.91 }; // conteúdo dos cadernos 2024.1/2025.1 fica entre 11% e 92% da largura
+// conteúdo dos cadernos 2024.1/2025.1 fica entre 11,4% e 88,6% da largura (medido em todas as questões);
+// o corte deixa ~3% à esquerda para as letras A–E, que ficam antes de cada alternativa
+const ZOOM = { l: 0.08, w: 0.815 };
 function page(q, cls = () => "", clickable = false) {
   const z = prova(q.prova).adapt, px = x => z ? (x - ZOOM.l) / ZOOM.w : x;
-  return `<div class="page${z ? " zoom" : ""}"><img src="img/${q.id}.png" alt="Questão ${q.id}" loading="lazy" width="882" height="${Math.round(882 / q.ar)}">
+  return `<div class="page${z ? " zoom" : ""}"${z ? ` style="--zl:${ZOOM.l};--zw:${ZOOM.w}"` : ""}><img src="img/${q.id}.png" alt="Questão ${q.id}" loading="lazy" width="882" height="${Math.round(882 / q.ar)}">
     ${q.lettered ? "" : q.opts.map(([x, y], j) => `<${clickable ? "button" : "span"} class="badge ${cls(j)}" ${clickable ? `data-o="${j}"` : ""} style="left:${px(x) * 100}%;top:${y * 100}%" aria-hidden="true">${L[j]}</${clickable ? "button" : "span"}>`).join("")}</div>`;
 }
 
@@ -282,6 +284,7 @@ function renderBlock() {
       <div class="timer" id="timer" aria-label="Tempo restante">120:00</div><button class="theme end" id="end">Encerrar<span class="lg"> prova</span></button>${themeBtn()}
     </div></div>
     <div class="wrap exam">
+      ${lido("dicaGirar") ? "" : `<p class="dica-girar">Gire o celular para ler a questão maior, ou toque nela para ampliar.<button data-dica aria-label="Fechar dica">✕</button></p>`}
       <div class="qs" id="slide"></div>
     </div>
     <div class="foot"><div class="in">
@@ -296,6 +299,7 @@ function renderBlock() {
   document.getElementById("next").onclick = () => go(s.cur + 1);
   document.getElementById("disc").onclick = () => { const i = s.cur; s.disc = s.disc.includes(i) ? s.disc.filter(k => k !== i) : [...s.disc, i]; renderSlide(); };
   document.getElementById("send").onclick = send;
+  app.querySelector("[data-dica]")?.addEventListener("click", e => { lembrar("dicaGirar", "1"); e.currentTarget.parentElement.remove(); fit(); });
   document.getElementById("end").onclick = e => endNow(e.currentTarget);
   app.querySelectorAll("[data-blk]").forEach(x => x.onclick = () => switchBlock(+x.dataset.blk));
   renderSlide(); clock(); showTrocas();
@@ -338,13 +342,34 @@ window.addEventListener("resize", fit);
 
 // setas do teclado navegam entre as questões
 document.addEventListener("keydown", e => {
-  if (!s?.qs || !document.getElementById("slide") || e.target.closest?.("input,textarea")) return;
+  if (!s?.qs || !document.getElementById("slide") || document.querySelector("dialog[open]") || e.target.closest?.("input,textarea")) return;
   if (e.key === "ArrowLeft") go(s.cur - 1);
   if (e.key === "ArrowRight") go(s.cur + 1);
 });
 
 
 const offset = b => sizes(s.p).slice(0, b).reduce((a, n) => a + n, 0);
+// tocar numa questão (ou resolução) que aparece pequena demais abre ela em tela cheia, com zoom e arrastando com o dedo
+document.addEventListener("click", e => {
+  const pg = e.target.closest?.(".page");
+  if (!pg || pg.closest("dialog") || e.target.closest("button") || pg.querySelector("img").offsetWidth >= IMG_W * MIN_FONT / TXT) return;
+  ampliar(pg);
+});
+function ampliar(pg) {
+  const d = document.createElement("dialog");
+  d.className = "viewer";
+  d.setAttribute("aria-label", "Questão ampliada");
+  d.innerHTML = `<div class="viewer-in">${pg.outerHTML}</div>
+    <div class="viewer-bar"><button data-z="0.8" aria-label="Diminuir">−</button><button data-z="1.25" aria-label="Aumentar">+</button><button data-x>Fechar</button></div>`;
+  const big = d.querySelector(".page");
+  let w = Math.max(innerWidth, IMG_W * 15 / TXT * (pg.classList.contains("zoom") ? ZOOM.w : 1)); // começa com a letra em ~15 px
+  const set = () => { big.style.width = big.style.maxWidth = w + "px"; };
+  d.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { w = Math.min(2600, Math.max(innerWidth, w * b.dataset.z)); set(); });
+  const done = () => { d.close(); d.remove(); };
+  d.querySelector("[data-x]").onclick = done;
+  d.addEventListener("cancel", e => { e.preventDefault(); done(); });
+  document.body.appendChild(d); set(); d.showModal();
+}
 function status() {
   const n = s.qs.length;
   const offset0 = offset(s.b), dots = document.getElementById("dots");

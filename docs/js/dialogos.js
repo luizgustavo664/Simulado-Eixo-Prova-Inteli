@@ -44,6 +44,7 @@ function novidades() {
       <li><b>Meus erros</b>: uma prova com as questões que você mais errou, bloco a bloco</li>
       <li>Em cada questão desses formatos, uma etiqueta mostra se ela é <b>inédita</b> ou quantas vezes você já <b>errou</b></li>
       <li>Botão <b>✕</b> para apagar uma tentativa do histórico</li>
+      <li>No celular: <b>toque na questão</b> para ampliar, ou gire o celular para ler maior</li>
     </ul>
     <p class="note">Os novos formatos ficam em "Outros formatos", na tela inicial.</p>
     <button class="primary" id="welcome-ok" autofocus>Bora testar!</button>`, () => lembrar("novidades", VERSAO));

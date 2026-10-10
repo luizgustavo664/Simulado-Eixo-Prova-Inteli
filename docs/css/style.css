@@ -116,7 +116,18 @@ button.blk.now{background:var(--accent);border-color:var(--accent);color:#fff}
 .page{position:relative;background:#fff;width:100%;container-type:inline-size}
 .page img{display:block;width:100%;height:auto}
 .page{overflow:hidden;margin-inline:auto}
-.page.zoom img{width:calc(100% / 0.91);max-width:none;margin-left:calc(-100% * 0.045 / 0.91)}
+.page.zoom img{width:calc(100% / var(--zw));max-width:none;margin-left:calc(-100% * var(--zl) / var(--zw))}
+@media (max-width:760px){.page{cursor:zoom-in}}
+/* questão ampliada: tela cheia, arrasta com o dedo nas duas direções */
+dialog.viewer{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#fff}
+dialog.viewer::backdrop{background:#fff}
+.viewer-in{height:100%;overflow:auto;padding-bottom:72px}
+.viewer .page{margin:0}
+.viewer .badge{pointer-events:none}
+.viewer-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:8px;padding:6px;border-radius:99px;background:var(--bar);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.viewer-bar button{background:transparent;border-color:var(--bar-line);color:var(--bar-ink);border-radius:99px;min-width:44px}
+.dica-girar{display:none}
+@media (max-width:560px) and (orientation:portrait){.dica-girar{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 8px 8px 14px;border-radius:10px;background:var(--paper);border:1px solid var(--line);font:.85rem/1.4 var(--ui);color:var(--muted)}.dica-girar button{margin-left:auto;padding:4px 10px;flex:none}}
 /* letras escalam com o recorte para acompanhar o espaçamento das linhas */
 .badge{position:absolute;transform:translate(calc(-100% - .8cqw),-10%);width:2.4cqw;height:2.4cqw;border-radius:50%;padding:0;border:max(1px,.17cqw) solid #2e2640;background:#fff;color:#2e2640;font:700 1.4cqw/1 var(--ui);display:grid;place-items:center}
 .badge.on{background:#2e2640;color:#fff}
@@ -214,6 +225,21 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
   .foot .nav{gap:6px;flex-wrap:nowrap}
   .foot button{padding:8px 10px;font-size:.85rem}
   #send{flex:1}
+}
+
+/* celular deitado: barras e rodapé finos para sobrar altura para a questão */
+@media (orientation:landscape) and (max-height:500px){
+  .bar .in{padding:4px 16px}
+  .bar [data-toggle-theme],.lg{display:none}
+  .blk{padding:4px 8px;letter-spacing:0}
+  .dot{width:22px;height:22px}
+  .timer{font-size:1rem}
+  .foot .in{padding:4px 16px}
+  .foot button{padding:6px 12px}
+  .qh{padding:4px 12px}
+  .answers{padding:4px 12px}
+  .opt{width:36px;height:36px}
+  .wrap.exam{padding-block:6px 56px}
 }
 
 /* tentativas: em espaço estreito (celular ou coluna lateral do desktop) cada linha vira um cartão:
