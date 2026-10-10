@@ -25,6 +25,7 @@ Com ele ligado, o site mostra só o aviso. Para testar a versão publicada antes
 - **186 questões reais** de 5 provas, recortadas dos PDFs como imagem para fórmulas e figuras ficarem iguais ao original.
 - **Provas 2024.1 e 2025.1 adaptativas**: 4 blocos (8, 6, 6 e 4 questões); acertar mais da metade de um bloco leva a uma trilha mais difícil. Os níveis de cada bloco seguem a ordem dos cadernos oficiais.
 - **Provas 2022.1, 2022.2 e 2023.1** com as 24 questões fixas da época; nelas dá para voltar entre os blocos.
+- **Outros formatos**: *Meia prova* (12 questões sorteadas de todas as provas, 4/3/3/2, 60 min) e *Meus erros* (24 questões com as que você mais errou em cada bloco, completando com inéditas). Mesmas regras, sem trilha; cada questão vale o mesmo.
 - **Regras do edital**: descarte de 1 questão por bloco (sem descarte, 1 acerto é desconsiderado), 120 minutos, contagem de saídas da tela, prova retomada se a página for atualizada.
 - **Resultado e revisão** com gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
 - **Histórico de notas** (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
