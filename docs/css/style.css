@@ -139,6 +139,7 @@ dialog.viewer::backdrop{background:#fff}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
 .nav button:disabled{opacity:.4;cursor:default}
 .foot button{padding:8px 16px}
+.foot #send.armed{background:var(--bar);border-color:var(--bar);color:var(--bar-ink)}
 .disc.on{border-color:var(--discard);color:var(--discard);background:var(--discard-bg)}
 @media (prefers-reduced-motion:no-preference){.q{transition:border-color .15s}}
 

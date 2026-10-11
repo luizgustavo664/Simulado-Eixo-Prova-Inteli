@@ -3,3 +3,4 @@ node_modules/
 # PDFs originais do Inteli: necessários só para regerar o site (npm run build).
 # Apague a linha abaixo se quiser versioná-los junto.
 provas/*.pdf
+.claude

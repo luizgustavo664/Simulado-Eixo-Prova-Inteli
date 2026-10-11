@@ -274,7 +274,18 @@ function page(q, cls = () => "", clickable = false) {
 }
 
 // uma questão por vez (carrossel); a barra do topo e o rodapé ficam fixos
+let sendArmed = 0;
+function sendLabel() {
+  return s.b < 3 ? (free() ? "Próximo bloco →" : `Enviar bloco ${s.b + 1}`) : "Finalizar prova";
+}
+function resetSendConfirmation() {
+  if (sendArmed) clearTimeout(sendArmed);
+  sendArmed = 0;
+  const btn = document.getElementById("send");
+  if (btn) { btn.textContent = sendLabel(); btn.classList.remove("armed"); }
+}
 function renderBlock() {
+  resetSendConfirmation();
   app.innerHTML = `
     <div class="bar"><div class="in">
       <div class="blocks">${[0, 1, 2, 3].map(b => free()
@@ -373,6 +384,7 @@ function ampliar(pg) {
   document.body.appendChild(d); set(); d.showModal();
 }
 function status() {
+  resetSendConfirmation();
   const n = s.qs.length;
   const offset0 = offset(s.b), dots = document.getElementById("dots");
   dots.innerHTML = s.qs.map((_, i) => {
@@ -380,7 +392,7 @@ function status() {
     return `<button class="dot ${st[0]} ${i === s.cur ? "cur" : ""}" data-go="${i}" title="Questão ${offset0 + i + 1}: ${st[1]}" aria-label="Questão ${offset0 + i + 1}, ${st[1]}">${offset0 + i + 1}</button>`;
   }).join("");
   dots.querySelectorAll("[data-go]").forEach(d => d.onclick = () => go(+d.dataset.go));
-  document.getElementById("send").textContent = s.b < 3 ? (free() ? "Próximo bloco →" : `Enviar bloco ${s.b + 1}`) : "Finalizar prova";
+  document.getElementById("send").textContent = sendLabel();
 }
 
 function closeAll() {
@@ -388,6 +400,15 @@ function closeAll() {
   s.blocks.forEach((blk, b) => { s.b = b; Object.assign(s, blk); closeBlock(); });
 }
 function send() {
+  // Em provas adaptativas, o bloco enviado fica trancado. Exige um segundo clique para evitar envio acidental.
+  if (prova(s.p).adapt && !sendArmed) {
+    const btn = document.getElementById("send");
+    btn.textContent = s.b < 3 ? `Confirmar envio do bloco ${s.b + 1}` : "Confirmar finalização";
+    btn.classList.add("armed");
+    sendArmed = setTimeout(resetSendConfirmation, 5000);
+    return;
+  }
+  resetSendConfirmation();
   if (free()) { if (s.b < 3) return switchBlock(s.b + 1); closeAll(); return finish(); }
   closeBlock();
   if (s.b < 3) { s.b++; openBlock(); window.scrollTo(0, 0); } else finish();
