@@ -5,3 +5,4 @@ node_modules/
 provas/*.pdf
 .claude
 feedbacks
+.vscode
