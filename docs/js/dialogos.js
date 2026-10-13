@@ -1,6 +1,6 @@
 // Diálogos: boas-vindas (só na primeira visita), novidades (uma vez por versão) e feedback enviado para o Google Forms.
 // a cada atualização: suba a VERSAO e troque a lista em novidades(); quem já visitou vê o aviso uma vez
-const VERSAO = "1.2";
+const VERSAO = "1.3";
 // eventos no GoatCounter (painel em luiz.goatcounter.com): só contagens, nada da pessoa; o script ignora o localhost
 const evento = (path, title) => { try { window.goatcounter?.count?.({ path, title, event: true }); } catch {} };
 const fbBtn = () => `<button class="theme" data-fb="">Feedback</button>`;
@@ -29,7 +29,7 @@ function welcome() {
     <p>Um simulador da prova de matemática e lógica do Inteli, com <b>questões reais</b> (2022.1 a 2025.1) e as regras do <b>edital 2027</b>.</p>
     <ul class="rules">
       <li><b>5 provas</b>, 2 delas <b>adaptativas</b> como a real</li>
-      <li>Correção na hora, com gabarito e <b>resolução oficial</b></li>
+      <li>Correção na hora, com gabarito, <b>resolução oficial</b>, tempo por questão e assuntos para revisar</li>
       <li><b>Histórico</b> de notas e calculadora ENEM, SAT, ACT e IB</li>
       <li>Achou um erro ou tem uma ideia? Botão <b>Feedback</b> no topo, sem login</li>
     </ul>
@@ -42,13 +42,12 @@ function novidades() {
   aviso(`
     <h2 id="welcome-title">Novidades da versão ${VERSAO} ✨</h2>
     <ul class="rules">
-      <li><b>Meia prova</b>: 12 questões sorteadas de todas as provas, em 60 min</li>
-      <li><b>Meus erros</b>: uma prova com as questões que você mais errou, bloco a bloco</li>
-      <li>Em cada questão desses formatos, uma etiqueta mostra se ela é <b>inédita</b> ou quantas vezes você já <b>errou</b></li>
-      <li>Botão <b>✕</b> para apagar uma tentativa do histórico</li>
-      <li>No celular: <b>toque na questão</b> para ampliar, ou gire o celular para ler maior</li>
+      <li>No resultado, o <b>tempo gasto em cada questão</b> e em cada bloco; as 3 mais demoradas ficam marcadas com ⏱</li>
+      <li><b>Assuntos para revisar</b>: cada questão tem o assunto do edital, o resultado mostra onde você errou e a tela inicial, o que você mais erra</li>
+      <li><b>Erratas</b> nas questões com erro no caderno oficial, e a resolução da questão 13 de 2025.1 corrigida</li>
+      <li>Na revisão, as letras de "Sua resposta" e "Correta" têm as mesmas cores das marcas na questão</li>
     </ul>
-    <p class="note">Os novos formatos ficam em "Outros formatos", na tela inicial.</p>
+    <p class="note">Tudo isso veio dos feedbacks de vocês. Valeu! Continue mandando pelo botão Feedback no topo.</p>
     <button class="primary" id="welcome-ok" autofocus>Bora testar!</button>`, () => lembrar("novidades", VERSAO));
 }
 
