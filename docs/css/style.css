@@ -167,6 +167,11 @@ details summary{cursor:pointer;color:var(--accent);font-weight:600}
 .res b.ok{color:var(--ok)}
 .res b.bad{color:var(--bad)}
 .res b.lenta{color:var(--discard)}
+/* assuntos com erro na tentativa: etiquetas que quebram linha */
+.assuntos{display:grid;gap:8px}
+.assuntos ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.assuntos li{font:.85rem var(--ui);padding:4px 12px;border-radius:99px;background:var(--bad-bg);color:var(--bad)}
+.assuntos li b{font-weight:600}
 /* errata ou esclarecimento escrito à mão (NOTAS em regras.js) */
 .errata{margin:0;padding:10px 16px;border-top:1px solid var(--line);background:var(--discard-bg);color:var(--ink);font:.88rem/1.5 var(--ui)}
 details .errata{margin-top:10px;border:0;border-radius:8px}

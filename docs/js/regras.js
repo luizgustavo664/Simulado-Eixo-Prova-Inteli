@@ -86,6 +86,16 @@ function errosPorQuestao(list) {
   });
   return st;
 }
+// erros por assunto (assuntos.js) numa lista de tentativas: [assunto, { erros, n }], mais erros antes; só os assuntos com erro
+function porAssunto(list) {
+  const t = {};
+  for (const r of list) for (const blk of r.res || []) blk.qs.forEach((id, i) => {
+    if (i === blk.excl || !byId[id]) return;
+    const x = t[assuntoDe[id] || "Outros"] ??= { erros: 0, n: 0 };
+    x.n++; if (blk.disc.includes(i) || blk.ans[i] !== byId[id].ans) x.erros++;
+  });
+  return Object.entries(t).filter(([, x]) => x.erros).sort((a, b) => b[1].erros - a[1].erros || a[1].n - b[1].n);
+}
 const paraRevisar = (st, q) => st[q.id]?.erros && !st[q.id].ultimaOk;
 // questões de cada bloco de um formato: sorteadas (meia prova) ou os erros, mais errados antes, completando com inéditas
 function montarProva(f, list) {

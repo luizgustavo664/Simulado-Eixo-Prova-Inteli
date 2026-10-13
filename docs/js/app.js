@@ -98,6 +98,7 @@ function intro() {
         const n = f.erros && BANK.filter(q => paraRevisar(revisar, q)).length, off = f.erros && !n;
         return `<button class="prova" data-p="${f.id}" aria-pressed="${f.id === chosen}" ${off ? "disabled" : ""}><b>${f.id}</b><span>${!f.erros ? f.desc : off ? "Faça uma prova primeiro: seus erros aparecem aqui" : `${n} ${n > 1 ? "questões" : "questão"} para revisar, bloco a bloco · ${f.min} min`}</span></button>`;
       }).join("")}</div>
+      ${(x => x.length ? `<p class="note">Assuntos que você mais erra: ${x.slice(0, 4).map(([a, v]) => `<b>${a}</b> (${v.erros} de ${v.n})`).join(", ")}. O <i>Meus erros</i> treina essas questões.</p>` : "")(porAssunto(hist.list))}
       <ul class="rules">
         <li>24 questões de matemática e lógica em 4 blocos: 8, 6, 6 e 4.</li>
         <li><b>Em cada bloco, descarte exatamente 1 questão e responda todas as outras.</b> Você responde 20 no total. A plataforma não avisa nem impede: sem descarte, 1 questão que você acertou é desconsiderada; descartes a mais e questões em branco contam como erro.</li>
@@ -483,6 +484,7 @@ function showResult(rec, past = true) {
         ${res.map(r => `<span class="kv">Bloco ${r.b + 1} <b>${r.c}/${r.n}</b>${trackName(p, r.b, r.lv) ? " · " + trackName(p, r.b, r.lv) : ""}${tp ? ` · ${fmtSeg(soma(r.qs))}` : ""}</span>`).join("")}
         <span class="kv">Saídas da tela <b>${rec.trocas ?? 0}</b></span>
       </div>
+      ${(x => x.length ? `<div class="assuntos"><span class="kv">Assuntos para revisar</span><ul>${x.map(([a, v]) => `<li><b>${a}</b> errou ${v.erros} de ${v.n}</li>`).join("")}</ul></div>` : "")(porAssunto([rec]))}
       ${tp ? `<p class="note">Você levou em média <b>${fmtSeg(Math.round(soma(res.flatMap(r => r.qs)) / vistas))}</b> em cada questão que abriu; o ritmo da prova é de ${fmtSeg(ritmo)}. O tempo de cada questão aparece embaixo dela, e as 3 mais demoradas estão marcadas com ⏱.</p>` : ""}
       <p class="note">Não existe nota de corte fixa: o corte muda a cada ano conforme os candidatos (são chamados para a próxima etapa pelo menos 3 vezes o número de vagas). Os 10 acertos que aparecem no edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</p>
       <div><button class="primary" id="again">${past ? "← Voltar" : "Ver histórico e fazer outra prova"}</button></div>
@@ -495,7 +497,7 @@ function showResult(rec, past = true) {
           : extra ? `<span class="chip bad">Descarte a mais · conta como erro</span>`
           : ok ? `<span class="chip ok">Acertou</span>` : `<span class="chip bad">${got === undefined ? "Em branco" : "Errou"}</span>`;
         return `<section class="q">
-          <div class="qh"><span class="qn">Questão ${num}${prova(p).sizes ? " · prova " + q.prova : ""}</span>${chip}</div>
+          <div class="qh"><span class="qh-l"><span class="qn">Questão ${num}${prova(p).sizes ? " · prova " + q.prova : ""}</span>${assuntoDe[q.id] ? `<span class="trk">${assuntoDe[q.id]}</span>` : ""}</span>${chip}</div>
           ${page(q, j => j === q.ans ? "right" : j === got && !off ? "wrong" : "")}
           ${nota(q, "enunciado")}
           <div class="res">
