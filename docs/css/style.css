@@ -163,6 +163,12 @@ dialog.viewer::backdrop{background:#fff}
 .trk{font:600 .7rem var(--ui);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid currentColor;color:var(--muted)}
 .res{font:.9rem var(--ui);padding:12px 16px;border-top:1px solid var(--line);display:grid;gap:10px}
 details summary{cursor:pointer;color:var(--accent);font-weight:600}
+/* letras da linha de resposta com as cores das marcas na imagem: verde a correta, vermelho a sua quando errou */
+.res b.ok{color:var(--ok)}
+.res b.bad{color:var(--bad)}
+/* errata ou esclarecimento escrito à mão (NOTAS em regras.js) */
+.errata{margin:0;padding:10px 16px;border-top:1px solid var(--line);background:var(--discard-bg);color:var(--ink);font:.88rem/1.5 var(--ui)}
+details .errata{margin-top:10px;border:0;border-radius:8px}
 details .page{margin-top:10px;border:1px solid var(--line)}
 
 /* ---------- diálogos: boas-vindas e feedback ---------- */

@@ -6,6 +6,12 @@ const PROVAS = [
   { id: "2022.2", adapt: false, desc: "24 questões fixas · com resolução" },
   { id: "2022.1", adapt: false, desc: "24 questões fixas" },
 ];
+// erratas e esclarecimentos escritos à mão, em HTML (o banco.js é gerado): "enunciado" aparece embaixo da questão, na prova e na revisão;
+// "resolucao", embaixo da resolução oficial
+const NOTAS = {
+  "20251-b3n1-5": { enunciado: "<b>Errata do caderno oficial:</b> na primeira equação horária, leia <i>x</i> = −2 + <i>V<sub>x</sub>t</i> (o 5 está no lugar da velocidade <i>V<sub>x</sub></i>). A resolução oficial já usa <i>V<sub>x</sub></i>." },
+  "20251-b3n1-3": { resolucao: "A resposta é 1: das raízes (−4, −1 e 2), só x = 2 está entre o 1º e o 5º ano, então o índice chega a 50 uma única vez." },
+};
 const SIZES = [8, 6, 6, 4], DURATION = 120 * 60e3, L = "ABCDE";
 // Pontos por questão no nível mais alto de cada bloco: o bloco 1 (o mais fácil) vale mais e o peso cai a cada bloco;
 // cada nível abaixo vale 15% menos. Máximo = 7×6 + 5×5 + 5×4,2 + 3×4 = 100.

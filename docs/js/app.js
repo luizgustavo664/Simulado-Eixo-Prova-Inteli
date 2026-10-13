@@ -267,6 +267,7 @@ const trackName = (p, b, lv) => b === 0 ? (nLevels(p, 0) > 1 ? `versão ${lv + 1
 // conteúdo dos cadernos 2024.1/2025.1 fica entre 11,4% e 88,6% da largura (medido em todas as questões);
 // o corte deixa ~3% à esquerda para as letras A–E, que ficam antes de cada alternativa
 const ZOOM = { l: 0.08, w: 0.815 };
+const nota = (q, k) => NOTAS[q.id]?.[k] ? `<p class="errata">${NOTAS[q.id][k]}</p>` : "";
 function page(q, cls = () => "", clickable = false) {
   const z = prova(q.prova).adapt, px = x => z ? (x - ZOOM.l) / ZOOM.w : x;
   return `<div class="page${z ? " zoom" : ""}"${z ? ` style="--zl:${ZOOM.l};--zw:${ZOOM.w}"` : ""}><img src="img/${q.id}.png" alt="Questão ${q.id}" loading="lazy" width="882" height="${Math.round(882 / q.ar)}">
@@ -325,6 +326,7 @@ function renderSlide() {
     <section class="q ${off ? "off" : ""}">
       <div class="qh"><span class="qh-l"><span class="qn">Questão ${n} · ${i + 1} de ${s.qs.length}</span>${prova(s.p).sizes ? marca(errosPorQuestao(hist.list)[q.id]) : ""}</span><span class="qn">Prova ${q.prova} · bloco ${s.b + 1}${trackName(s.p, s.b, s.lvs[s.b]) ? " · " + trackName(s.p, s.b, s.lvs[s.b]) : ""}</span></div>
       ${page(q, j => s.ans[i] === j ? "on" : "", !off)}
+      ${nota(q, "enunciado")}
       <div class="answers" role="group" aria-label="Resposta da questão ${n}">
         ${L.split("").map((l, j) => `<button class="opt" data-o="${j}" aria-pressed="${s.ans[i] === j}" ${off ? "disabled" : ""}>${l}</button>`).join("")}
       </div>
@@ -474,9 +476,10 @@ function showResult(rec, past = true) {
         return `<section class="q">
           <div class="qh"><span class="qn">Questão ${num}${prova(p).sizes ? " · prova " + q.prova : ""}</span>${chip}</div>
           ${page(q, j => j === q.ans ? "right" : j === got && !off ? "wrong" : "")}
+          ${nota(q, "enunciado")}
           <div class="res">
-            <span>${off ? "" : `Sua resposta: <b>${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b>${L[q.ans]}</b></span>
-            ${q.sol ? `<details><summary>Ver resolução</summary><div class="page"><img src="img/${q.id}s.png" alt="Resolução" loading="lazy"></div></details>` : ""}
+            <span>${off ? "" : `Sua resposta: <b class="${ok ? "ok" : "bad"}">${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b class="ok">${L[q.ans]}</b></span>
+            ${q.sol ? `<details><summary>Ver resolução</summary><div class="page"><img src="img/${q.id}s.png" alt="Resolução" loading="lazy"></div>${nota(q, "resolucao")}</details>` : ""}
             <button class="fb-link" data-fb="Prova ${q.prova} · questão ${num} (${q.id})">Achou um erro nesta questão?</button>
           </div>
         </section>`;
