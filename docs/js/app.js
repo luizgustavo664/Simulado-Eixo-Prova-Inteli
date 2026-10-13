@@ -479,6 +479,7 @@ function showResult(rec, past = true) {
       ${(([, t, m]) => `<p class="verdict"><b>${t}</b>${m}</p>`)(VEREDITOS.find(([n]) => hits * 20 / (rec.of ?? 20) >= n))}
       ${rec.trocas ? `<p class="elim">Você saiu da tela da prova ${rec.trocas} ${rec.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
       ${res.some(r => r.penalty) ? `<p class="note">Sem descarte em ${res.filter(r => r.penalty).map(r => "bloco " + (r.b + 1)).join(", ")}: 1 acerto foi desconsiderado em cada um, como manda o edital.</p>` : ""}
+      ${(x => x.length ? `<p class="note">Sem descarte em ${x.map(r => "bloco " + (r.b + 1)).join(", ")}, mas sem nenhum acerto: não havia acerto para desconsiderar, então nada foi descontado.</p>` : "")(res.filter(r => !r.penalty && !r.disc.length))}
       <div class="score">
         <span class="kv">Acertos <b>${hits}/${rec.of ?? 20}</b></span>
         ${res.map(r => `<span class="kv">Bloco ${r.b + 1} <b>${r.c}/${r.n}</b>${trackName(p, r.b, r.lv) ? " · " + trackName(p, r.b, r.lv) : ""}${tp ? ` · ${fmtSeg(soma(r.qs))}` : ""}</span>`).join("")}
@@ -493,7 +494,8 @@ function showResult(rec, past = true) {
       ${r.qs.map((q, i) => {
         num++;
         const off = i === r.excl, extra = !off && r.disc.includes(i), got = extra ? undefined : r.ans[i], ok = got === q.ans;
-        const chip = off ? `<span class="chip off">${r.penalty ? "Desconsiderada (sem descarte)" : "Descartada"}</span>`
+        // sem descarte: com acerto, 1 acerto é desconsiderado; sem nenhum acerto, a última fica fora da conta (não muda a nota)
+        const chip = off ? `<span class="chip off">${r.penalty ? "Desconsiderada (sem descarte)" : r.disc.length ? "Descartada" : "Fora da correção (sem descarte)"}</span>`
           : extra ? `<span class="chip bad">Descarte a mais · conta como erro</span>`
           : ok ? `<span class="chip ok">Acertou</span>` : `<span class="chip bad">${got === undefined ? "Em branco" : "Errou"}</span>`;
         return `<section class="q">
