@@ -4,3 +4,4 @@ node_modules/
 # Apague a linha abaixo se quiser versioná-los junto.
 provas/*.pdf
 .claude
+feedbacks

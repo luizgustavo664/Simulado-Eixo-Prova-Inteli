@@ -96,7 +96,26 @@ function emit(q) {
   fs.writeFileSync(`${OUT}/img/${q.id}.png`, ex.pix.asPNG());
   const yc = ex.yel.length ? (ex.yel[0] + ex.yel[ex.yel.length - 1]) / 2 / ex.h : null;
   const hl = yc === null ? null : opts.reduce((k, o, i) => o[1] <= yc + 0.005 ? i : k, -1);
-  if (q.sol?.length) fs.writeFileSync(`${OUT}/img/${q.id}s.png`, stitch(q.sol).pix.asPNG());
+  if (q.sol?.length) {
+    const sol = stitch(q.sol).pix;
+    // A resolução original desta questão troca 50.000 por 60.000 na primeira conta.
+    // Corrige a imagem exibida sem alterar o PDF-fonte.
+    if (q.id === "20251-b2n1-5") {
+      // Troca apenas o algarismo 6 de "60.000" pelo 5 já renderizado em "51.000"
+      // na conta seguinte, preservando fonte, tamanho e alinhamento do documento.
+      const px = sol.getPixels(), w = sol.getWidth(), channels = 3;
+      const copy = [];
+      for (let y = 0; y < 22; y++) for (let x = 0; x < 16; x++) {
+        const i = ((541 + y) * w + 484 + x) * channels;
+        copy.push(px[i], px[i + 1], px[i + 2]);
+      }
+      for (let y = 0; y < 22; y++) for (let x = 0; x < 16; x++) {
+        const i = ((281 + y) * w + 484 + x) * channels, j = (y * 16 + x) * channels;
+        px[i] = copy[j]; px[i + 1] = copy[j + 1]; px[i + 2] = copy[j + 2];
+      }
+    }
+    fs.writeFileSync(`${OUT}/img/${q.id}s.png`, sol.asPNG());
+  }
   const ans = q.ans ?? ANS[q.prova]?.[q.id.split("-").slice(1).join("-")];
   if (ans === undefined || ans < 0) console.error("SEM GABARITO", q.id);
   if (hl !== null && hl !== ans) console.error("DESTAQUE DIVERGE", q.id, "ABCDE"[hl], "ABCDE"[ans]);
