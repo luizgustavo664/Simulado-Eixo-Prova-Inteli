@@ -68,6 +68,7 @@ function renderHistory() {
     hist.list.splice(+b.dataset.del, 1); saveLocal(); intro();
   });
 }
+const fmtSeg = n => n < 60 ? `${n} s` : `${Math.floor(n / 60)} min${n % 60 ? ` ${n % 60} s` : ""}`;
 const fmtDate = at => new Date(at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
 // tema: claro por padrão; a escolha fica salva só neste navegador
@@ -125,6 +126,16 @@ function leave() {
 document.addEventListener("visibilitychange", () => { if (document.hidden) leave(); else away = false; });
 window.addEventListener("blur", leave);
 window.addEventListener("focus", () => { away = false; });
+// tempo em cada questão (ms, por id): soma enquanto ela está na tela e pausa com a aba escondida
+function tempo() {
+  const now = Date.now();
+  if (s.vis && s.since) (s.t ||= {})[s.vis] = (s.t[s.vis] || 0) + now - s.since;
+  s.since = now;
+}
+document.addEventListener("visibilitychange", () => {
+  if (!s || s.done || !s.vis) return;
+  if (document.hidden) { tempo(); s.since = 0; } else s.since = Date.now();
+});
 function showTrocas() {
   const el = document.getElementById("trocas"); if (!el) return;
   el.textContent = s.trocas ? `${s.trocas} ${s.trocas > 1 ? "saídas" : "saída"} da tela` : "";
@@ -132,6 +143,7 @@ function showTrocas() {
 
 // andamento salvo no navegador: atualizar a página retoma a prova (e conta como saída da tela)
 function saveProgress() {
+  if (s.vis) tempo();
   if (free()) Object.assign(s.blocks[s.b], { qs: s.qs, ans: s.ans, disc: s.disc, cur: s.cur });
   const blocks = s.blocks?.map(x => ({ ...x, qs: ids(x.qs) }));
   try { localStorage.setItem("andamento", JSON.stringify({ ...s, blocks, qs: ids(s.qs), res: s.res.map(r => ({ ...r, qs: ids(r.qs) })) })); } catch {}
@@ -139,6 +151,7 @@ function saveProgress() {
 function loadProgress() {
   try {
     const d = JSON.parse(localStorage.getItem("andamento") || "null"); if (!d || d.done) return null;
+    d.since = 0; // o tempo com a página fechada não conta para a questão
     d.qs = d.qs.map(id => byId[id]); d.res = d.res.map(r => ({ ...r, qs: r.qs.map(id => byId[id]) }));
     if (d.blocks) { d.blocks.forEach(x => x.qs = x.qs.map(id => byId[id])); d.qs = d.blocks[d.b].qs; }
     return d.qs.every(Boolean) && d.res.every(r => r.qs.every(Boolean)) && (d.blocks || []).every(x => x.qs.every(Boolean)) ? d : null;
@@ -228,7 +241,7 @@ function endNow(btn) {
 
 function start() {
   const f = prova(chosen), dur = (f.min ?? 120) * 60e3;
-  s = { p: chosen, b: 0, lvs: [], ups: 0, res: [], trocas: 0, dur, end: Date.now() + dur };
+  s = { p: chosen, b: 0, lvs: [], ups: 0, res: [], trocas: 0, dur, end: Date.now() + dur, t: {} };
   const blocos = f.sizes ? montarProva(f, hist.list) : !f.adapt && [0, 1, 2, 3].map(b => pool(s.p, b, 0));
   if (blocos) s.blocks = blocos.map(qs => ({ qs, ans: {}, disc: [], cur: 0 }));
   evento("inicio/" + s.p, "Começou: " + nome(s.p));
@@ -322,6 +335,7 @@ function go(i) { if (i < 0 || i >= s.qs.length) return; s.cur = i; renderSlide()
 const marca = st => !st ? `<span class="chip new">Inédita</span>` : st.erros ? `<span class="chip bad">Errou ${st.erros}×</span>` : `<span class="chip ok">Já acertou</span>`;
 function renderSlide() {
   const i = s.cur, q = s.qs[i], off = s.disc.includes(i), n = offset(s.b) + i + 1;
+  tempo(); s.vis = q.id;
   document.getElementById("slide").innerHTML = `
     <section class="q ${off ? "off" : ""}">
       <div class="qh"><span class="qh-l"><span class="qn">Questão ${n} · ${i + 1} de ${s.qs.length}</span>${prova(s.p).sizes ? marca(errosPorQuestao(hist.list)[q.id]) : ""}</span><span class="qn">Prova ${q.prova} · bloco ${s.b + 1}${trackName(s.p, s.b, s.lvs[s.b]) ? " · " + trackName(s.p, s.b, s.lvs[s.b]) : ""}</span></div>
@@ -436,12 +450,13 @@ const VEREDITOS = [
   [0, "Podemos melhorar 💪", "Todo mundo começa de algum lugar. Revise as resoluções abaixo, uma por uma, e tente de novo."],
 ];
 function finish(timeout, early = false) {
-  clearInterval(tick); s.done = true; clearProgress();
+  tempo(); s.vis = null; clearInterval(tick); s.done = true; clearProgress();
   const total = Math.min(100, s.res.reduce((a, r) => a + r.pts, 0)), hits = s.res.reduce((a, r) => a + r.c, 0);
   const used = Math.round(((s.dur ?? DURATION) - Math.max(0, s.end - Date.now())) / 6e4);
   // res guarda questões, respostas e descartes de cada bloco para rever a correção depois, pelo histórico
   const rec = { at: Date.now(), prova: s.p, score: +total.toFixed(1), hits, minutes: used, timeout: !!timeout, early, trocas: s.trocas, levels: s.lvs,
-    res: s.res.map(({ b, lv, c, n, excl, penalty, qs, ans, disc }) => ({ b, lv, c, n, excl, penalty, qs: ids(qs), ans, disc })) };
+    res: s.res.map(({ b, lv, c, n, excl, penalty, qs, ans, disc }) => ({ b, lv, c, n, excl, penalty, qs: ids(qs), ans, disc })),
+    tempos: Object.fromEntries(Object.entries(s.t || {}).map(([id, ms]) => [id, Math.round(ms / 1e3)])) };
   rec.of = s.res.reduce((a, r) => a + r.n, 0);
   saveAttempt(rec);
   evento("fim/" + s.p, `${timeout ? "Tempo esgotado" : early ? "Encerrou antes" : "Terminou"}: ${nome(s.p)}`);
@@ -450,6 +465,11 @@ function finish(timeout, early = false) {
 // correção de uma tentativa: a que acabou de terminar ou uma do histórico (past)
 function showResult(rec, past = true) {
   const p = rec.prova, hits = rec.hits, res = rec.res.map(r => ({ ...r, qs: r.qs.map(id => byId[id]) }));
+  // tempo por questão (tentativas antigas não têm): as 3 mais demoradas ganham destaque
+  const tp = rec.tempos && Object.keys(rec.tempos).length ? rec.tempos : null, seg = q => tp?.[q.id] ?? 0;
+  const lentas = tp ? Object.entries(tp).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id) : [];
+  const soma = qs => qs.reduce((a, q) => a + seg(q), 0), vistas = tp ? Object.keys(tp).length : 1;
+  const ritmo = Math.round((prova(p).min ?? 120) * 60 / sizes(p).reduce((a, n) => a + n, 0));
   let num = 0;
   app.innerHTML = `<div class="wrap stack">
     <div class="top"><div class="eyebrow">${nome(p)} · ${past ? fmtDate(rec.at) + " · " : ""}${rec.timeout ? "tempo esgotado" : rec.early ? "encerrada antes do fim" : "finalizada"} · ${rec.minutes} min usados</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
@@ -460,9 +480,10 @@ function showResult(rec, past = true) {
       ${res.some(r => r.penalty) ? `<p class="note">Sem descarte em ${res.filter(r => r.penalty).map(r => "bloco " + (r.b + 1)).join(", ")}: 1 acerto foi desconsiderado em cada um, como manda o edital.</p>` : ""}
       <div class="score">
         <span class="kv">Acertos <b>${hits}/${rec.of ?? 20}</b></span>
-        ${res.map(r => `<span class="kv">Bloco ${r.b + 1} <b>${r.c}/${r.n}</b>${trackName(p, r.b, r.lv) ? " · " + trackName(p, r.b, r.lv) : ""}</span>`).join("")}
+        ${res.map(r => `<span class="kv">Bloco ${r.b + 1} <b>${r.c}/${r.n}</b>${trackName(p, r.b, r.lv) ? " · " + trackName(p, r.b, r.lv) : ""}${tp ? ` · ${fmtSeg(soma(r.qs))}` : ""}</span>`).join("")}
         <span class="kv">Saídas da tela <b>${rec.trocas ?? 0}</b></span>
       </div>
+      ${tp ? `<p class="note">Você levou em média <b>${fmtSeg(Math.round(soma(res.flatMap(r => r.qs)) / vistas))}</b> em cada questão que abriu; o ritmo da prova é de ${fmtSeg(ritmo)}. O tempo de cada questão aparece embaixo dela, e as 3 mais demoradas estão marcadas com ⏱.</p>` : ""}
       <p class="note">Não existe nota de corte fixa: o corte muda a cada ano conforme os candidatos (são chamados para a próxima etapa pelo menos 3 vezes o número de vagas). Os 10 acertos que aparecem no edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</p>
       <div><button class="primary" id="again">${past ? "← Voltar" : "Ver histórico e fazer outra prova"}</button></div>
     </div>
@@ -478,7 +499,7 @@ function showResult(rec, past = true) {
           ${page(q, j => j === q.ans ? "right" : j === got && !off ? "wrong" : "")}
           ${nota(q, "enunciado")}
           <div class="res">
-            <span>${off ? "" : `Sua resposta: <b class="${ok ? "ok" : "bad"}">${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b class="ok">${L[q.ans]}</b></span>
+            <span>${off ? "" : `Sua resposta: <b class="${ok ? "ok" : "bad"}">${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b class="ok">${L[q.ans]}</b>${tp ? ` · Tempo: <b class="${lentas.includes(q.id) ? "lenta" : ""}">${lentas.includes(q.id) ? "⏱ " : ""}${q.id in tp ? fmtSeg(seg(q)) : "não abriu"}</b>` : ""}</span>
             ${q.sol ? `<details><summary>Ver resolução</summary><div class="page"><img src="img/${q.id}s.png" alt="Resolução" loading="lazy"></div>${nota(q, "resolucao")}</details>` : ""}
             <button class="fb-link" data-fb="Prova ${q.prova} · questão ${num} (${q.id})">Achou um erro nesta questão?</button>
           </div>

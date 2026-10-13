@@ -166,6 +166,7 @@ details summary{cursor:pointer;color:var(--accent);font-weight:600}
 /* letras da linha de resposta com as cores das marcas na imagem: verde a correta, vermelho a sua quando errou */
 .res b.ok{color:var(--ok)}
 .res b.bad{color:var(--bad)}
+.res b.lenta{color:var(--discard)}
 /* errata ou esclarecimento escrito à mão (NOTAS em regras.js) */
 .errata{margin:0;padding:10px 16px;border-top:1px solid var(--line);background:var(--discard-bg);color:var(--ink);font:.88rem/1.5 var(--ui)}
 details .errata{margin-top:10px;border:0;border-radius:8px}
