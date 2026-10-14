@@ -32,8 +32,9 @@ Quem já visitou o site vê, uma vez, um aviso com as novidades da versão. Para
 - **Outros formatos**: *Meia prova* (12 questões sorteadas de todas as provas, 4/3/3/2, 60 min) e *Meus erros* (24 questões com as que você mais errou em cada bloco, completando com inéditas). Mesmas regras, sem trilha; cada questão vale o mesmo.
 - **Regras do edital**: descarte de 1 questão por bloco (sem descarte, 1 acerto é desconsiderado), 120 minutos, contagem de saídas da tela, prova retomada se a página for atualizada.
 - **Assuntos**: cada questão tem um assunto do edital (14, em `docs/js/assuntos.js`). O resultado mostra os assuntos em que você errou, e a tela inicial, os que você mais erra no histórico.
-- **Resultado e revisão** com gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
-- **Histórico de notas** (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
+- **Resultado e revisão** no formato de folha corrigida: desempenho por bloco, questões recolhíveis com o assunto de cada uma, gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
+- **Assuntos para revisar**, em ordem de prioridade com os erros e acertos de cada um, e **Onde você mais erra** na tela inicial, com atalho para o Meus erros.
+- **Histórico de notas** em cartões (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
 
 ## Estrutura
 
