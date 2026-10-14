@@ -1,6 +1,6 @@
 // Diálogos: boas-vindas (só na primeira visita), novidades (uma vez por versão) e feedback enviado para o Google Forms.
 // a cada atualização: suba a VERSAO e troque a lista em novidades(); quem já visitou vê o aviso uma vez
-const VERSAO = "1.3";
+const VERSAO = "1.4";
 // eventos no GoatCounter (painel em luiz.goatcounter.com): só contagens, nada da pessoa; o script ignora o localhost
 const evento = (path, title) => { try { window.goatcounter?.count?.({ path, title, event: true }); } catch {} };
 const fbBtn = () => `<button class="theme" data-fb="">Feedback</button>`;
@@ -42,10 +42,10 @@ function novidades() {
   aviso(`
     <h2 id="welcome-title">Novidades da versão ${VERSAO} ✨</h2>
     <ul class="rules">
-      <li>No resultado, o <b>tempo gasto em cada questão</b> e em cada bloco; as 3 mais demoradas ficam marcadas com ⏱</li>
-      <li><b>Assuntos para revisar</b>: cada questão tem o assunto do edital, o resultado mostra onde você errou e a tela inicial, o que você mais erra</li>
-      <li><b>Erratas</b> nas questões com erro no caderno oficial, e a resolução da questão 13 de 2025.1 corrigida</li>
-      <li>Na revisão, as letras de "Sua resposta" e "Correta" têm as mesmas cores das marcas na questão</li>
+      <li><b>Tela inicial mais organizada</b>: provas agrupadas por tipo, botão de começar sempre à vista e as regras em blocos</li>
+      <li><b>Resultado como folha corrigida</b>: barra de desempenho por bloco e questões recolhíveis, com a matéria de cada uma</li>
+      <li><b>Assuntos para revisar em ordem</b>, com os erros e acertos de cada um; na tela inicial, "Onde você mais erra" leva direto ao Meus erros</li>
+      <li><b>Suas tentativas em cartões</b> e uma tela "Antes de começar" mais fácil de ler</li>
     </ul>
     <p class="note">Tudo isso veio dos feedbacks de vocês. Valeu! Continue mandando pelo botão Feedback no topo.</p>
     <button class="primary" id="welcome-ok" autofocus>Bora testar!</button>`, () => lembrar("novidades", VERSAO));
