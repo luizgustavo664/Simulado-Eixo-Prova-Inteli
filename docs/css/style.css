@@ -377,7 +377,18 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
 .treinar:hover:not(:disabled){text-decoration:underline}
 .treinar:disabled{color:var(--muted);cursor:default}
 .fracos ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.fracos li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;align-items:center;gap:12px;font:.82rem/1.3 var(--ui)}
+.fracos li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 12px;
+  font: .82rem/1.3 var(--ui);
+}
+
+.fracos li b {
+  text-align: right;
+  white-space: nowrap;
+}
 .fracos li i{height:6px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
 .fracos li i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--accent);border-radius:inherit}
 .fracos li b{font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
