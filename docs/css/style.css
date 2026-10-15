@@ -170,7 +170,7 @@ details summary{cursor:pointer;color:var(--accent);font-weight:600}
 /* assuntos com erro na tentativa: etiquetas que quebram linha */
 .assuntos{display:grid;gap:8px}
 .assuntos ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
-.assuntos li{font:.85rem var(--ui);padding:4px 12px;border-radius:99px;background:var(--bad-bg);color:var(--bad)}
+.assuntos li{font:.85rem var(--ui);padding:4px 12px;border-radius:99px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .assuntos li b{font-weight:600}
 /* errata ou esclarecimento escrito à mão (NOTAS em regras.js) */
 .errata{margin:0;padding:10px 16px;border-top:1px solid var(--line);background:var(--discard-bg);color:var(--ink);font:.88rem/1.5 var(--ui)}
@@ -269,3 +269,170 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
   .tent tr::after{content:"";order:-1;flex-basis:100%} /* quebra de linha depois de prova, nota e Ver */
   .tent td[data-l]::after{content:" " attr(data-l)}
 }
+
+/* ---------- início: grupos de prova, botão sempre à vista, regras em blocos, equivalência ---------- */
+.grp{margin:0 0 -8px;font:500 .8rem var(--ui);color:var(--muted)}
+.provas.fixas{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.start{position:sticky;bottom:12px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 18px;box-shadow:0 6px 18px rgba(20,16,40,.12)}
+.start p{margin:0;font:.8rem/1.3 var(--ui);color:var(--muted)}
+.start b{display:block;font:700 1.15rem var(--display);color:var(--ink)}
+.start button{padding:12px 24px}
+.regras{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.rg{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:10px 12px}
+.rg svg,.note.info svg{flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rg svg{width:34px;height:34px;padding:7px;border-radius:9px;background:var(--paper);color:var(--accent)}
+.rg h3{margin:0;font:600 .85rem/1.3 var(--ui)}
+.rg p{margin:1px 0 0;font:.78rem/1.4 var(--ui);color:var(--muted)}
+.mais summary{cursor:pointer;color:var(--accent);font:500 .85rem var(--ui);width:fit-content}
+.mais .rules{margin-top:10px;font:.8rem/1.5 var(--ui);color:var(--muted)}
+.mais .note{margin-top:8px}
+.note.info{display:flex;gap:8px;font-size:.8rem}
+.note.info svg{width:16px;height:16px;margin-top:2px}
+#equiv .seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:4px;padding:4px;background:var(--bg);border-radius:12px}
+#equiv .seg button{border:0;background:none;border-radius:9px;padding:7px 0;color:var(--muted)}
+#equiv .seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 4px rgba(20,16,40,.18)}
+#equiv .enem-in{max-width:none}
+#equiv .enem-in input{font-size:1.2rem;padding:12px 14px;border-radius:12px;border-width:1.5px}
+#equiv .enem-in input:focus{border-color:var(--accent)}
+#equiv .score{flex-wrap:nowrap;align-items:center;gap:14px;background:var(--bg);border-radius:12px;padding:12px 16px}
+#equiv .score .kv{min-width:0}
+#equiv .score .big{font-size:2.4rem;color:var(--accent);min-width:46px;text-align:center}
+#equiv .score.off .big{color:var(--muted)}
+#equiv .hist tbody tr:nth-child(odd) td{background:var(--bg)}
+#equiv .hist tbody td{border-bottom:0}
+#equiv .hist td.num:last-child{font-weight:600}
+#equiv .hist tr.hit td{background:var(--ok-bg);color:var(--ok)}
+
+/* ---------- cards de prova: altura igual, subtítulo curto e marcador de seleção ---------- */
+.prova{position:relative;align-content:center;min-height:76px;padding:12px 46px 12px 16px;transition:border-color .12s,background .12s}
+.prova b{font-size:1.05rem;line-height:1.2}
+.prova span{font-size:.8rem;line-height:1.3}
+.prova:hover:not(:disabled){border-color:var(--muted)}
+.prova::after{content:"";position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line)}
+.prova[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
+.prova[aria-pressed="true"]::after{border-color:var(--accent);background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/12px no-repeat}
+.prova:disabled{opacity:.55;cursor:not-allowed}
+
+/* ---------- suas tentativas: cartões ---------- */
+.vazio{margin:0;padding:18px;border:1.5px dashed var(--line);border-radius:12px;color:var(--muted);font:.88rem/1.5 var(--ui);text-align:center}
+.tentativas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tent-i{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"p n a" "s s s";align-items:center;gap:6px 14px;background:var(--bg);border-radius:12px;padding:12px 14px}
+.tent-p{grid-area:p;display:grid;min-width:0}
+.tent-p b{font:700 1.05rem/1.2 var(--display)}
+.tent-p span{font:.78rem var(--ui);color:var(--muted)}
+.tent-n{grid-area:n;display:flex;align-items:baseline;gap:4px}
+.tent-n b{font:700 1.6rem/1 var(--display);font-variant-numeric:tabular-nums}
+.tent-n i{font-style:normal;color:#e0a100}
+.tent-n small{font:.72rem var(--ui);color:var(--muted)}
+.tent-n .bad{color:var(--bad);font:600 .9rem var(--ui)}
+.tent-a{grid-area:a;display:flex;gap:6px}
+.tent-a .ver{padding:5px 14px;font-size:.8rem}
+.tent-a .del{padding:5px 9px;font-size:.8rem;color:var(--muted)}
+.tent-a .del.armed{background:var(--accent);border-color:var(--accent);color:#fff}
+.tent-s{grid-area:s;display:flex;flex-wrap:wrap;gap:6px}
+.tent-s span{font:.75rem var(--ui);color:var(--muted);background:var(--paper);border-radius:99px;padding:2px 10px}
+.tent-s b{color:var(--ink);font-weight:600}
+
+/* ---------- resultado: folha de prova corrigida (como no Adalove) ---------- */
+.resultado{gap:18px}
+.rs-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.rs-t{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:700}
+.rs-sub{margin:4px 0 0;color:var(--accent);font:600 .95rem var(--ui)}
+.rs-nota{display:flex;align-items:baseline;gap:8px}
+.rs-nota .big{font-size:2.6rem}
+.selos{display:flex;flex-wrap:wrap;gap:10px}
+.selo{padding:10px 16px;border-radius:4px;font:600 .88rem var(--ui)}
+.selo.roxo{background:#8a5cdb;color:#fff}.selo.verde{background:#2ba02b;color:#fff}.selo.amarelo{background:#ffd23f;color:#4d3d00}
+.bloco{background:var(--bg);border-radius:10px;padding:22px 20px 8px;display:grid;gap:14px;margin-top:4px}
+.bloco-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:0 4px}
+.bloco-h h2{font-size:1.8rem;font-weight:700}
+.bstats{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.bs{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border-radius:99px;padding:4px 12px;font:.8rem var(--ui);color:var(--muted)}
+.bs b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.rq{background:var(--paper);border-radius:18px;overflow:hidden;margin-bottom:14px}
+.rq>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:26px 30px;color:var(--ink);font-weight:600}
+.rq>summary::-webkit-details-marker{display:none}
+.rq>summary::after{content:"";margin-left:auto;flex:none;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+.rq[open]>summary::after{transform:rotate(-135deg)}
+.rq[open]>summary{border-bottom:1px solid var(--line)}
+.rq .qn{font:600 1.05rem var(--ui);color:var(--ink)}
+.st{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.st svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.st.ok{background:#2ea85a}.st.bad{background:#d93a3a}.st.warn{background:#ffd23f;color:#4d3d00}.st.off{background:var(--muted)}
+.mat{font:600 .72rem var(--ui);padding:3px 10px;border-radius:99px;background:var(--bg);color:var(--ink);border:1px solid var(--line);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rq-st{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 20px 4px}
+.rq-st:empty{display:none}
+.rq>.page{margin:0;border:0;border-top:1px solid var(--line)}
+@media (max-width:560px){
+  .bloco{padding:16px 10px 4px}
+  .rq>summary{padding:18px 16px}
+  .rq{border-radius:14px}
+  .tent-i{grid-template-columns:1fr auto;grid-template-areas:"p n" "s a"}
+}
+
+/* ---------- onde você mais erra: ligado ao "Meus erros" ---------- */
+.fracos{background:var(--bg);border-radius:12px;padding:12px 14px;display:grid;gap:10px}
+.fracos-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 8px;font:600 .85rem var(--ui)}
+.treinar{white-space:nowrap;background:none;border:0;padding:0;color:var(--accent);font:600 .82rem var(--ui);cursor:pointer}
+.treinar:hover:not(:disabled){text-decoration:underline}
+.treinar:disabled{color:var(--muted);cursor:default}
+.fracos ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fracos li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 12px;
+  font: .82rem/1.3 var(--ui);
+}
+
+.fracos li b {
+  text-align: right;
+  white-space: nowrap;
+}
+.fracos li i{height:6px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
+.fracos li i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--accent);border-radius:inherit}
+.fracos li b{font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ---------- resultado: desempenho por bloco, assuntos em ordem, avisos e "sobre a nota" ---------- */
+.desemp{background:var(--bg);border-radius:12px;padding:12px 16px;display:grid;gap:10px}
+.dp{display:grid;grid-template-columns:64px minmax(0,1fr) auto 40px;align-items:center;gap:12px;font:.85rem var(--ui)}
+.dp i{height:10px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
+.dp i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:#2ba02b;border-radius:inherit}
+.dp b{font-weight:700;font-variant-numeric:tabular-nums}
+.dp em{font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.ic-t{display:inline-flex;vertical-align:-2px;margin-right:3px;color:var(--discard)}
+.ic-t svg,.sb h3 svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sobre-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px}
+.sb{background:var(--bg);border-radius:12px;padding:14px 16px;display:grid;gap:8px;align-content:start}
+.sb h3{margin:0;display:flex;align-items:center;gap:8px;font:600 .9rem var(--ui)}
+.sb h3 svg{width:18px;height:18px;color:var(--accent)}
+.sb p{margin:0;font:.85rem/1.5 var(--ui);color:var(--muted)}
+.sb p b{color:var(--ink)}
+.sb ul{margin:0;padding-left:18px;display:grid;gap:4px;font:.82rem/1.5 var(--ui);color:var(--muted)}
+.sb-n{display:flex;gap:10px}
+.sb-n>div{flex:1;background:var(--paper);border-radius:10px;padding:8px 12px;display:grid}
+.sb-n b{font:700 1.3rem/1.2 var(--display)}
+.sb-n span{font:.75rem var(--ui);color:var(--muted)}
+@media (max-width:560px){.dp{grid-template-columns:54px minmax(0,1fr) auto}.dp em{display:none}.mat{max-width:42vw}}
+
+/* ---------- assuntos para revisar (resultado): etiquetas com a contagem de erros e acertos ---------- */
+.assuntos li{display:inline-flex;align-items:baseline;gap:8px}
+.assuntos li span{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.assuntos .kv small{font-size:.78rem;color:var(--muted)}
+
+/* ---------- antes de começar a prova: resumo, dois grupos curtos e o aviso ---------- */
+.instr{gap:14px}
+.instr .resumo{margin:0;font:1.05rem/1.4 var(--ui);color:var(--muted)}
+.instr .resumo b{color:var(--ink);font-weight:600}
+.instr .sub{margin:8px 0 -4px;font:600 .72rem var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.instr .rules{list-style:none;padding:0;gap:10px;font-size:.95rem;line-height:1.6}
+.instr .rules li{position:relative;padding-left:20px}
+.instr .rules li::before{content:"";position:absolute;left:3px;top:.7em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.instr .nav button{padding:12px 24px}
+@media (max-width:560px){.provas.fixas{grid-template-columns:1fr}}
+
+/* ficha de revisão (Wave): link discreto ao lado do assunto, no resultado e em "Onde você mais erra" */
+a.ficha{margin-left:8px;font:600 .78rem var(--ui);color:var(--accent);text-decoration:none;white-space:nowrap}
+a.ficha:hover{text-decoration:underline}
+a.ficha:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.assuntos li a.ficha{margin-left:6px}

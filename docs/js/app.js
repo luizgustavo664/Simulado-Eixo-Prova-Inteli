@@ -37,21 +37,19 @@ let histPage = 0;
 function renderHistory() {
   const el = document.getElementById("hist"), pager = document.getElementById("pager"); if (!el) return;
   pager.innerHTML = "";
-  if (!hist.ready) { el.innerHTML = `<p class="note">Carregando suas tentativas…</p>`; return; }
-  if (!hist.list.length) { el.innerHTML = `<p class="note">Nenhuma tentativa ainda. Sua nota aparece aqui quando você terminar uma prova.</p>`; return; }
+  if (!hist.ready) { el.innerHTML = `<p class="vazio">Carregando suas tentativas…</p>`; return; }
+  if (!hist.list.length) { el.innerHTML = `<p class="vazio">Nenhuma tentativa ainda. Sua nota aparece aqui quando você terminar uma prova.</p>`; return; }
   const best = {}; hist.list.forEach(r => { if (!r.eliminated) best[r.prova] = Math.max(best[r.prova] ?? 0, r.score); });
   const fmt = n => n.toFixed(1).replace(".", ",");
   // tentativas antigas (sem res) ou com questão que saiu do banco não abrem a correção
   const canView = r => r.res?.every(b => b.qs.every(id => byId[id]));
   const pages = Math.ceil(hist.list.length / HIST_PAGE), start = (histPage = Math.min(histPage, pages - 1)) * HIST_PAGE;
   // data-l: rótulo que aparece só no celular, onde cada tentativa vira um cartão sem cabeçalho
-  el.innerHTML = `<div class="scroll"><table class="hist tent">
-    <thead><tr><th>Data</th><th>Prova</th><th class="num">Nota</th><th class="num">Acertos</th><th class="num">Tempo</th><th class="num">Saídas</th><th></th></tr></thead>
-    <tbody>${hist.list.slice(start, start + HIST_PAGE).map((r, i) => `<tr>
-      <td>${fmtDate(r.at)}</td>
-      <td>${r.prova}</td><td class="num n">${r.eliminated ? `<span class="bad">Eliminado</span>` : fmt(r.score) + (r.score === best[r.prova] ? " ★" : "")}</td>
-      <td class="num" data-l="acertos">${r.hits}/${r.of ?? 20}</td><td class="num">${r.minutes} min</td><td class="num" data-l="${r.trocas === 1 ? "saída" : "saídas"}">${r.trocas ?? "–"}</td>
-      <td class="num">${canView(r) ? `<button class="ver" data-ver="${start + i}">Ver</button>` : ""}${histCol ? "" : `<button class="del" data-del="${start + i}" aria-label="Apagar tentativa de ${fmtDate(r.at)}" title="Apagar tentativa">✕</button>`}</td></tr>`).join("")}</tbody></table></div>
+  el.innerHTML = `<ul class="tentativas">${hist.list.slice(start, start + HIST_PAGE).map((r, i) => `<li class="tent-i">
+      <div class="tent-p"><b>${r.prova}</b><span>${fmtDate(r.at)}</span></div>
+      <div class="tent-n">${r.eliminated ? `<span class="bad">Eliminado</span>` : `<b>${fmt(r.score)}</b>${r.score === best[r.prova] ? `<i title="Melhor nota nesta prova">★</i>` : ""}<small>pontos</small>`}</div>
+      <div class="tent-a">${canView(r) ? `<button class="ver" data-ver="${start + i}">Ver</button>` : ""}${histCol ? "" : `<button class="del" data-del="${start + i}" aria-label="Apagar tentativa de ${fmtDate(r.at)}" title="Apagar tentativa">✕</button>`}</div>
+      <div class="tent-s"><span><b>${r.hits}/${r.of ?? 20}</b> acertos</span><span><b>${r.minutes}</b> min</span><span><b>${r.trocas ?? "–"}</b> ${r.trocas === 1 ? "saída" : "saídas"}</span></div></li>`).join("")}</ul>
     <p class="note">★ melhor nota em cada prova. ${hist.where}</p>`;
   if (pages > 1) pager.innerHTML = `<button data-pg="-1" aria-label="Tentativas mais recentes" ${histPage ? "" : "disabled"}>‹</button>
     <span>${histPage + 1} de ${pages}</span>
@@ -83,6 +81,40 @@ app.addEventListener("click", e => {
   app.querySelectorAll("[data-toggle-theme]").forEach(x => x.outerHTML = themeBtn());
 });
 
+// ícones de linha (estilo Lucide) e blocos-resumo das regras da tela inicial
+const ICONES = {
+  layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+  cut: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  up: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  calc: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>',
+  bars: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  alert: '<line x1="12" y1="6" x2="12" y2="13"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+  minus: '<line x1="6" y1="12" x2="18" y2="12"/>',
+  info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+};
+const icone = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[n]}</svg>`;
+// assuntos do que mais precisa de revisão para o que menos: maior proporção de erros, depois mais erros
+const porNecessidade = x => [...x].sort(([an, a], [bn, b]) => b.erros / b.n - a.erros / a.n || b.erros - a.erros || b.n - a.n || an.localeCompare(bn, "pt-BR"));
+const relogio = `<span class="ic-t">${icone("clock")}</span>`;
+const REGRAS = [
+  ["layers", "Estrutura", "24 questões em 4 blocos: 8, 6, 6 e 4"],
+  ["clock", "Tempo", "120 minutos. Zerou, a prova encerra com o que estiver marcado"],
+  ["cut", "Descarte", "Em cada bloco, descarte exatamente 1 questão e responda as outras"],
+  ["eye", "Saída da tela", "Trocar de aba ou atualizar a página fica registrado"],
+  ["up", "Adaptativas", "Mais da metade do bloco certa leva a uma trilha mais difícil. Bloco enviado não volta"],
+  ["undo", "Provas fixas", "2022.1, 2022.2 e 2023.1: dá para voltar entre os blocos"],
+  ["calc", "Calculadora", "Só básica. Nada de científica ou celular"],
+  ["bars", "Pontuação", "Os pesos são estimados: use a nota como referência"],
+];
+// subtítulo de cada card: data nas adaptativas, "com/sem resolução" nas fixas (o tipo já está no título do grupo)
+const metaProva = p => p.adapt ? p.desc.replace(/^Adaptativa · /, "").replace(/^./, c => c.toUpperCase()) : /com resolução/.test(p.desc) ? "Com resolução" : "Sem resolução";
+const botaoProva = p => `<button class="prova" data-p="${p.id}" aria-pressed="${p.id === chosen}"><b>${p.id}</b><span>${metaProva(p)}</span></button>`;
+
 const nome = p => prova(p).sizes ? p : "Prova " + p;
 function intro() {
   clearInterval(tick);
@@ -92,13 +124,21 @@ function intro() {
     <h1>Simulado Eixo Prova</h1>
     <div class="cols"><div class="sheet">
       <h2>Escolha a prova</h2>
-      <div class="provas">${PROVAS.map(p => `<button class="prova" data-p="${p.id}" aria-pressed="${p.id === chosen}"><b>${p.id}</b><span>${p.desc}</span></button>`).join("")}</div>
-      <h2>Outros formatos</h2>
+      <p class="grp">Adaptativas</p>
+      <div class="provas">${PROVAS.filter(p => p.adapt).map(botaoProva).join("")}</div>
+      <p class="grp">24 questões fixas</p>
+      <div class="provas fixas">${PROVAS.filter(p => !p.adapt).map(botaoProva).join("")}</div>
+      <p class="grp">Outros formatos</p>
       <div class="provas">${FORMATOS.map(f => {
         const n = f.erros && BANK.filter(q => paraRevisar(revisar, q)).length, off = f.erros && !n;
-        return `<button class="prova" data-p="${f.id}" aria-pressed="${f.id === chosen}" ${off ? "disabled" : ""}><b>${f.id}</b><span>${!f.erros ? f.desc : off ? "Faça uma prova primeiro: seus erros aparecem aqui" : `${n} ${n > 1 ? "questões" : "questão"} para revisar, bloco a bloco · ${f.min} min`}</span></button>`;
+        return `<button class="prova" data-p="${f.id}" aria-pressed="${f.id === chosen}" ${off ? "disabled" : ""} title="${off ? "Faça uma prova primeiro: seus erros aparecem aqui" : f.desc}"><b>${f.id}</b><span>${!f.erros ? `${f.sizes.reduce((a, x) => a + x, 0)} sorteadas · ${f.min} min` : off ? "Libera após sua 1ª prova" : `${n} para revisar · ${f.min} min`}</span></button>`;
       }).join("")}</div>
-      ${(x => x.length ? `<p class="note">Assuntos que você mais erra: ${x.slice(0, 4).map(([a, v]) => `<b>${a}</b> (${v.erros} de ${v.n})`).join(", ")}. O <i>Meus erros</i> treina essas questões.</p>` : "")(porAssunto(hist.list))}
+      ${(x => x.length ? `<div class="fracos"><div class="fracos-h"><span>Onde você mais erra</span><button class="treinar" id="treinar" ${chosen === "Meus erros" || !BANK.some(q => paraRevisar(revisar, q)) ? "disabled" : ""}>Treinar no Meus erros</button></div>
+        <ul>${porNecessidade(x).slice(0, 4).map(([a, v]) => `<li><span>${a}${linkFicha(a)}</span><i style="--p:${Math.round(v.erros / v.n * 100)}%"></i><b>${v.erros} de ${v.n}</b></li>`).join("")}</ul></div>` : "")(porAssunto(hist.list))}
+      <div class="start"><p>Prova selecionada<b>${chosen}</b></p><button class="primary" id="go">Começar ${prova(chosen).sizes ? chosen.toLowerCase() : "prova " + chosen}</button></div>
+      <h2>Antes de começar</h2>
+      <div class="regras">${REGRAS.map(([i, t, d]) => `<div class="rg">${icone(i)}<div><h3>${t}</h3><p>${d}</p></div></div>`).join("")}</div>
+      <details class="mais"><summary>Ver detalhes das regras</summary>
       <ul class="rules">
         <li>24 questões de matemática e lógica em 4 blocos: 8, 6, 6 e 4.</li>
         <li><b>Em cada bloco, descarte exatamente 1 questão e responda todas as outras.</b> Você responde 20 no total. A plataforma não avisa nem impede: sem descarte, 1 questão que você acertou é desconsiderada; descartes a mais e questões em branco contam como erro.</li>
@@ -108,7 +148,7 @@ function intro() {
         <li>Só calculadora básica. Nada de científica ou celular.</li>
       </ul>
       <p class="note">As trilhas seguem a ordem dos cadernos oficiais. Os pesos de pontuação são estimados, então use a nota como referência.</p>
-      <div><button class="primary" id="go">Começar ${prova(chosen).sizes ? chosen.toLowerCase() : "prova " + chosen}</button></div>
+      </details>
     </div>
     <div class="side"><div class="sheet"><div class="hist-head"><h2>Suas tentativas</h2><div class="pager" id="pager"></div></div><div id="hist"></div></div>
     <div class="sheet" id="equiv"></div></div></div>
@@ -116,6 +156,7 @@ function intro() {
   renderHistory(); renderEquiv();
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { chosen = b.dataset.p; intro(); });
   document.getElementById("go").onclick = instructions;
+  const treinar = document.getElementById("treinar"); if (treinar) treinar.onclick = () => { chosen = "Meus erros"; intro(); };
 }
 
 // edital 5.1.5: a plataforma registra cada saída da tela da prova (trocar de aba ou janela, atualizar a página)
@@ -166,7 +207,7 @@ function renderEquiv() {
     <h2>Sua nota vale quantos acertos?</h2>
     <div class="seg" role="group" aria-label="Exame">${Object.entries(EXAMES).map(([k, x]) => `<button data-ex="${k}" aria-pressed="${k === equiv.ex}">${x.nome}</button>`).join("")}</div>
     ${e.ib ? `
-    <p class="note">Pelo edital 2027, a nota de ${e.campo} do IB ${e.anos} pode substituir o Eixo Prova a partir de 6 no Standard ou 5 no Higher.</p>
+    <p class="note info">${icone("info")}<span>Pelo edital 2027, a nota de ${e.campo} do IB ${e.anos} pode substituir o Eixo Prova a partir de 6 no Standard ou 5 no Higher.</span></p>
     <div class="ib-in">
       <label class="enem-in" for="nivel-equiv">Nível
         <select id="nivel-equiv">${Object.entries(e.ib).map(([k, n]) => `<option value="${k}" ${k === equiv.nivel ? "selected" : ""}>${n.nome} (${k})</option>`).join("")}</select>
@@ -175,7 +216,7 @@ function renderEquiv() {
         <select id="nota-equiv"><option value="">Escolha</option>${[7, 6, 5, 4, 3, 2, 1].map(n => `<option ${String(n) === String(equiv.nota) ? "selected" : ""}>${n}</option>`).join("")}</select>
       </label>
     </div>` : `
-    <p class="note">Pelo edital 2027, a nota de ${e.campo} do ${e.nome} ${e.anos} pode substituir o Eixo Prova a partir de ${e.min} pontos.</p>
+    <p class="note info">${icone("info")}<span>Pelo edital 2027, a nota de ${e.campo} do ${e.nome} ${e.anos} pode substituir o Eixo Prova a partir de ${e.min} pontos.</span></p>
     <label class="enem-in" for="nota-equiv">Nota em ${e.campo}
       <input id="nota-equiv" type="number" inputmode="decimal" min="0" max="${e.max}" step="${e.dec ? 0.1 : 1}" placeholder="Ex.: ${e.ex}" value="${equiv.nota}">
     </label>`}
@@ -196,7 +237,7 @@ function renderEquivOut() {
   const a = !Number.isFinite(nota) ? undefined : e.ib ? ibAcertos(equiv.nivel, nota) : acertosEquiv(e, nota);
   const key = e.ib ? equiv.nivel + nota : String(a);
   document.querySelectorAll("#equiv tr[data-k]").forEach(tr => tr.classList.toggle("hit", a != null && tr.dataset.k === key));
-  if (a === undefined) { out.innerHTML = ""; return; }
+  if (a === undefined) { out.innerHTML = `<div class="score off"><span class="big">–</span><span class="kv">${e.ib ? "Escolha o nível e a nota" : "Digite sua nota"} para ver quantos acertos ela vale.</span></div>`; return; }
   const best = Math.max(0, ...hist.list.filter(r => !prova(r.prova)?.sizes).map(r => r.hits || 0));
   out.innerHTML = a === null
     ? `<p class="elim">${e.ib ? `Nota ${nota} no ${e.ib[equiv.nivel].nome} não é aceita (mínimo ${equiv.nivel === "SL" ? 6 : 5})` : `Abaixo de ${e.min}`}: o ${e.nome} não substitui o Eixo Prova, então você precisa fazer a prova.</p>`
@@ -209,13 +250,18 @@ function instructions() {
   app.innerHTML = `<div class="wrap stack">
     <div class="top"><div class="eyebrow">${nome(chosen)} · ${f.erros ? "suas questões para revisar" : f.desc}</div>${themeBtn()}</div>
     <h1>Antes de começar</h1>
-    <div class="sheet">
+    <div class="sheet instr">
+      <p class="resumo"><b>${f.min ?? 120} minutos</b> · <b>${total} questões</b> · <b>4 blocos</b> (${sz.slice(0, 3).join(", ")} e ${sz[3]})</p>
+      <h3 class="sub">Como funciona</h3>
       <ul class="rules">
-        <li><b>${f.min ?? 120} minutos</b> para ${total} questões em 4 blocos (${sz.slice(0, 3).join(", ")} e ${sz[3]}). O cronômetro começa assim que você clicar em "Começar agora".</li>
+        <li>O cronômetro começa assim que você clicar em "Começar agora".</li>
         <li>Em cada bloco, <b>descarte exatamente 1 questão</b> e responda as outras. Sem descarte, 1 questão que você acertou é desconsiderada; descartes a mais e questões em branco contam como erro. A plataforma não avisa.</li>
         <li>Use <b>Voltar</b> e <b>Avançar</b> no rodapé (ou as setas do teclado) para passar as questões. As bolinhas no topo mostram o que está respondido (verde), descartado (laranja) e em branco.</li>
         ${f.sizes ? `<li>Questões de várias provas, cada uma no bloco em que caiu na prova original. A prova de origem aparece no topo de cada questão.</li>` : ""}
         <li>${adapt ? "<b>Bloco enviado não volta.</b> O desempenho em cada bloco define a dificuldade do próximo." : "Esta prova não tem trilha: dá para ir e voltar entre os blocos até finalizar."}</li>
+      </ul>
+      <h3 class="sub">Regras da prova</h3>
+      <ul class="rules">
         <li>Sair da tela da prova (trocar de aba ou janela, atualizar a página) fica registrado.</li>
         <li>Só calculadora básica. Nada de científica ou celular.</li>
       </ul>
@@ -471,26 +517,30 @@ function showResult(rec, past = true) {
   const lentas = tp ? Object.entries(tp).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id) : [];
   const soma = qs => qs.reduce((a, q) => a + seg(q), 0), vistas = tp ? Object.keys(tp).length : 1;
   const ritmo = Math.round((prova(p).min ?? 120) * 60 / sizes(p).reduce((a, n) => a + n, 0));
-  let num = 0;
+  let num = 0, resp = 0, pen = res.filter(r => r.penalty).length;
+  res.forEach(r => r.qs.forEach((q, i) => { const off = i === r.excl, extra = !off && r.disc.includes(i); if (extra) pen++; else if (!off && r.ans[i] !== undefined) resp++; }));
   app.innerHTML = `<div class="wrap stack">
     <div class="top"><div class="eyebrow">${nome(p)} · ${past ? fmtDate(rec.at) + " · " : ""}${rec.timeout ? "tempo esgotado" : rec.early ? "encerrada antes do fim" : "finalizada"} · ${rec.minutes} min usados</div><div class="top-actions">${starWrap()}${fbBtn()}${themeBtn()}</div></div>
-    <div class="sheet">
-      <div class="score"><span class="big">${rec.score.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
+    <div class="sheet resultado">
+      <div class="rs-head">
+        <div><h2 class="rs-t">Eixo Prova</h2><p class="rs-sub">Folha de prova corrigida</p></div>
+        <div class="rs-nota"><span class="big">${rec.score.toFixed(1).replace(".", ",")}</span><span class="kv">de 100 pontos</span></div>
+      </div>
+      <div class="selos"><b class="selo roxo">Total de respostas: ${resp}</b><b class="selo verde">Total de acertos: ${hits}/${rec.of ?? 20}</b><b class="selo amarelo">Total de penalizações: ${pen}</b></div>
+      <div class="desemp"><div class="fracos-h"><span>Desempenho por bloco</span></div>${res.map(r => { const pct = r.n ? Math.round(r.c / r.n * 100) : 0; return `<div class="dp"><span>Bloco ${r.b + 1}</span><i style="--p:${pct}%" role="img" aria-label="${pct}% de acertos"></i><b>${r.c}/${r.n}</b><em>${pct}%</em></div>`; }).join("")}</div>
       ${(([, t, m]) => `<p class="verdict"><b>${t}</b>${m}</p>`)(VEREDITOS.find(([n]) => hits * 20 / (rec.of ?? 20) >= n))}
       ${rec.trocas ? `<p class="elim">Você saiu da tela da prova ${rec.trocas} ${rec.trocas > 1 ? "vezes" : "vez"}. Na prova online isso fica registrado e pode reduzir seu tempo ou, nos casos mais graves, desclassificar.</p>` : ""}
-      ${res.some(r => r.penalty) ? `<p class="note">Sem descarte em ${res.filter(r => r.penalty).map(r => "bloco " + (r.b + 1)).join(", ")}: 1 acerto foi desconsiderado em cada um, como manda o edital.</p>` : ""}
-      ${(x => x.length ? `<p class="note">Sem descarte em ${x.map(r => "bloco " + (r.b + 1)).join(", ")}, mas sem nenhum acerto: não havia acerto para desconsiderar, então nada foi descontado.</p>` : "")(res.filter(r => !r.penalty && !r.disc.length))}
-      <div class="score">
-        <span class="kv">Acertos <b>${hits}/${rec.of ?? 20}</b></span>
-        ${res.map(r => `<span class="kv">Bloco ${r.b + 1} <b>${r.c}/${r.n}</b>${trackName(p, r.b, r.lv) ? " · " + trackName(p, r.b, r.lv) : ""}${tp ? ` · ${fmtSeg(soma(r.qs))}` : ""}</span>`).join("")}
-        <span class="kv">Saídas da tela <b>${rec.trocas ?? 0}</b></span>
-      </div>
-      ${(x => x.length ? `<div class="assuntos"><span class="kv">Assuntos para revisar</span><ul>${x.map(([a, v]) => `<li><b>${a}</b> errou ${v.erros} de ${v.n}</li>`).join("")}</ul></div>` : "")(porAssunto([rec]))}
-      ${tp ? `<p class="note">Você levou em média <b>${fmtSeg(Math.round(soma(res.flatMap(r => r.qs)) / vistas))}</b> em cada questão que abriu; o ritmo da prova é de ${fmtSeg(ritmo)}. O tempo de cada questão aparece embaixo dela, e as 3 mais demoradas estão marcadas com ⏱.</p>` : ""}
-      <p class="note">Não existe nota de corte fixa: o corte muda a cada ano conforme os candidatos (são chamados para a próxima etapa pelo menos 3 vezes o número de vagas). Os 10 acertos que aparecem no edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</p>
+      ${res.some(r => r.penalty) ? `<p class="note info">${icone("info")}<span>Sem descarte em ${res.filter(r => r.penalty).map(r => "bloco " + (r.b + 1)).join(", ")}: 1 acerto foi desconsiderado em cada um, como manda o edital.</span></p>` : ""}
+      ${(x => x.length ? `<p class="note info">${icone("info")}<span>Sem descarte em ${x.map(r => "bloco " + (r.b + 1)).join(", ")}, mas sem nenhum acerto: não havia acerto para desconsiderar, então nada foi descontado.</span></p>` : "")(res.filter(r => !r.penalty && !r.disc.length))}
+      ${(x => x.length ? `<div class="assuntos"><span class="kv">Assuntos para revisar <small>· do que mais precisa para o que menos</small></span><ul>${porNecessidade(x).map(([a, v]) => `<li><b>${a}</b><span>${v.erros} ${v.erros === 1 ? "erro" : "erros"} · ${v.n - v.erros} ${v.n - v.erros === 1 ? "acerto" : "acertos"}</span>${linkFicha(a)}</li>`).join("")}</ul>${linkGeral()}</div>` : "")(porAssunto([rec]))}
+      <details class="mais sobre"><summary>Sobre a nota${tp ? " e o tempo" : ""}</summary>
+        <div class="sobre-g">
+          ${tp ? `<div class="sb"><h3>${icone("clock")}Seu ritmo</h3><div class="sb-n"><div><b>${fmtSeg(Math.round(soma(res.flatMap(r => r.qs)) / vistas))}</b><span>em média por questão aberta</span></div><div><b>${fmtSeg(ritmo)}</b><span>ritmo da prova</span></div></div><p>O tempo de cada questão aparece dentro dela, e as 3 mais demoradas ganham o ícone ${relogio}.</p></div>` : ""}
+          <div class="sb"><h3>${icone("bars")}Nota de corte</h3><p><b>Não existe nota de corte fixa.</b></p><ul><li>O corte muda a cada ano conforme os candidatos.</li><li>São chamados para a próxima etapa pelo menos 3 vezes o número de vagas.</li><li>Os 10 acertos do edital são só uma referência de equivalência, e já houve aprovação com 8 acertos.</li></ul></div>
+        </div>
+      </details>
       <div><button class="primary" id="again">${past ? "← Voltar" : "Ver histórico e fazer outra prova"}</button></div>
-    </div>
-    ${res.map(r => `<h2>Bloco ${r.b + 1} ${trackName(p, r.b, r.lv) ? `<span class="trk">${trackName(p, r.b, r.lv)}</span>` : ""}</h2>
+      ${res.map(r => `<div class="bloco"><div class="bloco-h"><h2>Bloco ${r.b + 1}</h2>${trackName(p, r.b, r.lv) ? `<span class="trk">${trackName(p, r.b, r.lv)}</span>` : ""}<span class="bstats"><span class="bs"><b>${r.c}/${r.n}</b> acertos</span>${tp ? `<span class="bs">${relogio}<b>${fmtSeg(soma(r.qs))}</b></span>` : ""}</span></div>
       ${r.qs.map((q, i) => {
         num++;
         const off = i === r.excl, extra = !off && r.disc.includes(i), got = extra ? undefined : r.ans[i], ok = got === q.ans;
@@ -498,17 +548,20 @@ function showResult(rec, past = true) {
         const chip = off ? `<span class="chip off">${r.penalty ? "Desconsiderada (sem descarte)" : r.disc.length ? "Descartada" : "Fora da correção (sem descarte)"}</span>`
           : extra ? `<span class="chip bad">Descarte a mais · conta como erro</span>`
           : ok ? `<span class="chip ok">Acertou</span>` : `<span class="chip bad">${got === undefined ? "Em branco" : "Errou"}</span>`;
-        return `<section class="q">
-          <div class="qh"><span class="qh-l"><span class="qn">Questão ${num}${prova(p).sizes ? " · prova " + q.prova : ""}</span>${assuntoDe[q.id] ? `<span class="trk">${assuntoDe[q.id]}</span>` : ""}</span>${chip}</div>
+        const k = off ? (r.penalty ? "warn" : "off") : extra ? "warn" : ok ? "ok" : "bad";
+        return `<details class="rq">
+          <summary><span class="qn">Questão ${num}</span><span class="st ${k}" role="img" aria-label="${{ ok: "Acertou", bad: got === undefined ? "Em branco" : "Errou", warn: "Penalizada", off: "Descartada" }[k]}">${icone({ ok: "check", bad: "x", warn: "alert", off: "minus" }[k])}</span>${assuntoDe[q.id] ? `<span class="mat">${assuntoDe[q.id]}</span>` : ""}</summary>
+          <div class="rq-st">${off || extra ? chip : ""}${prova(p).sizes ? `<span class="kv">Prova ${q.prova}</span>` : ""}</div>
           ${page(q, j => j === q.ans ? "right" : j === got && !off ? "wrong" : "")}
           ${nota(q, "enunciado")}
           <div class="res">
-            <span>${off ? "" : `Sua resposta: <b class="${ok ? "ok" : "bad"}">${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b class="ok">${L[q.ans]}</b>${tp ? ` · Tempo: <b class="${lentas.includes(q.id) ? "lenta" : ""}">${lentas.includes(q.id) ? "⏱ " : ""}${q.id in tp ? fmtSeg(seg(q)) : "não abriu"}</b>` : ""}</span>
+            <span>${off ? "" : `Sua resposta: <b class="${ok ? "ok" : "bad"}">${got === undefined ? "em branco" : L[got]}</b> · `}Correta: <b class="ok">${L[q.ans]}</b>${tp ? ` · Tempo: <b class="${lentas.includes(q.id) ? "lenta" : ""}">${lentas.includes(q.id) ? relogio : ""}${q.id in tp ? fmtSeg(seg(q)) : "não abriu"}</b>` : ""}</span>
             ${q.sol ? `<details><summary>Ver resolução</summary><div class="page"><img src="img/${q.id}s.png" alt="Resolução" loading="lazy"></div>${nota(q, "resolucao")}</details>` : ""}
             <button class="fb-link" data-fb="Prova ${q.prova} · questão ${num} (${q.id})">Achou um erro nesta questão?</button>
           </div>
-        </section>`;
-      }).join("")}`).join("")}
+        </details>`;
+      }).join("")}</div>`).join("")}
+    </div>
   </div>`;
   document.getElementById("again").onclick = intro;
   window.scrollTo(0, 0);
