@@ -14,9 +14,9 @@ Para publicar no GitHub Pages: **Settings → Pages → Deploy from a branch →
 
 Para subir mudanças na `main` sem liberar o site ainda, ligue o aviso de manutenção no topo de `docs/js/app.js`:
 
-```js
+~~~js
 const MANUTENCAO = "hoje às 18:00"; // texto da volta; null libera o site
-```
+~~~
 
 Com ele ligado, o site mostra só o aviso. Para testar a versão publicada antes de liberar, abra a URL com `?preview` no fim. Para liberar, troque a linha para `null` e faça o commit (dá pelo editor do próprio GitHub); o site atualiza em cerca de 1 minuto.
 
@@ -34,29 +34,29 @@ Quem já visitou o site vê, uma vez, um aviso com as novidades da versão. Para
 - **Assuntos**: cada questão tem um assunto do edital (14, em `docs/js/assuntos.js`). O resultado mostra os assuntos em que você errou, e a tela inicial, os que você mais erra no histórico.
 - **Resultado e revisão** no formato de folha corrigida: desempenho por bloco, questões recolhíveis com o assunto de cada uma, gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
 - **Assuntos para revisar**, em ordem de prioridade com os erros e acertos de cada um, e **Onde você mais erra** na tela inicial, com atalho para o Meus erros.
-- **Fichas de revisão da Wave**: cada assunto em que você errou (no resultado e em "Onde você mais erra") ganha um link que abre a ficha direto na página do assunto, e o resultado traz também a folha de fórmulas e a estratégia de prova. Por enquanto os PDFs ficam fora do GitHub, então os links só aparecem ao abrir o site no seu computador (ver "Material de revisão").
+- **Materiais de revisão da Wave 2026**: os assuntos contemplados pelas aulas têm links para os PDFs completos correspondentes. Os links aparecem localmente (arquivo ou `localhost`), pois os PDFs ficam fora do GitHub por enquanto. O catálogo associa os assuntos às aulas, sem direcionamento para páginas específicas.
 - **Histórico de notas** em cartões (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
 
 ## Estrutura
 
-```
+~~~text
 docs/                    site (é o que vai para o ar)
-  index.html             página: só a estrutura e a ordem dos scripts
-  css/style.css          estilos (tema claro/escuro, prova, resultado, diálogos)
-  js/banco.js            banco de questões, gerado pelo build (não edite à mão)
-  js/assuntos.js         assunto de cada questão (marcado à mão; questão nova no banco precisa entrar aqui)
-  js/regras.js           provas, pontuação, correção e equivalência ENEM/SAT/ACT/IB
-  js/materiais.js        liga cada assunto às páginas das fichas da Wave (docs/material/*.pdf)
-  js/estrela.js          botão de estrela do GitHub e mascote
-  js/dialogos.js         boas-vindas e feedback
-  js/app.js              telas: início, instruções, prova e resultado
-  material/              fichas de revisão da comunidade Wave (PDF; fora do git por enquanto)
-  img/                   recortes: <id>.png (questão) e <id>s.png (resolução), gerados pelo build
+  index.html              página: só a estrutura e a ordem dos scripts
+  css/style.css           estilos (tema claro/escuro, prova, resultado, diálogos)
+  js/banco.js             banco de questões, gerado pelo build (não edite à mão)
+  js/assuntos.js          assunto de cada questão (marcado à mão; questão nova no banco precisa entrar aqui)
+  js/regras.js            provas, pontuação, correção e equivalência ENEM/SAT/ACT/IB
+  js/materiais.js         associa os assuntos às aulas da Wave e aos PDFs completos
+  js/estrela.js           botão de estrela do GitHub e mascote
+  js/dialogos.js          boas-vindas e feedback
+  js/app.js               telas: início, instruções, prova e resultado
+  material/               PDFs de autoestudo da Wave (fora do git por enquanto)
+  img/                    recortes: <id>.png (questão) e <id>s.png (resolução), gerados pelo build
 gerador/
-  gerar-banco.mjs        lê os PDFs, recorta as questões e gera docs/img e docs/js/banco.js
-  checar-material.mjs    confere as fichas da Wave: nomes, páginas e assuntos (npm run material)
-provas/                  PDFs originais (fora do git, ver .gitignore)
-```
+  gerar-banco.mjs         lê os PDFs, recorta as questões e gera docs/img e docs/js/banco.js
+  checar-material.mjs     confere PDFs cadastrados, caminhos e assuntos (npm run material)
+provas/                   PDFs originais (fora do git, ver .gitignore)
+~~~
 
 ## Como regerar o site
 
@@ -65,13 +65,13 @@ Precisa de [Node.js](https://nodejs.org) 18 ou mais novo.
 1. Coloque os PDFs em `provas/` com estes nomes: `2022.1.pdf` (traz 2022.1, 2022.2 e 2023 juntos), `2022.2.pdf` (2022.2 com resoluções), `2024.1.pdf` e `Gabarito-Final-Prova-PS-2025.1-3.pdf`.
 2. Rode:
 
-```bash
+~~~bash
 npm install
-```
+~~~
 
-```bash
+~~~bash
 npm run build
-```
+~~~
 
 Para mudar só a página (estilo, regras, textos), edite os arquivos de `docs/` direto: não precisa de build. O build só é necessário quando os PDFs ou os ajustes do banco mudam.
 
@@ -83,18 +83,20 @@ Os scripts são comuns (não módulos ES) para a página abrir direto do arquivo
 - **Gabarito**: 2022 e 2023 trazem "ALTERNATIVA CORRETA" no PDF. Em 2024.1 a resposta vem do "Gabarito:" do caderno. Em 2025.1 vem das resoluções, conferida com o destaque amarelo que o caderno põe na alternativa certa (o destaque é apagado das imagens).
 - **Ajustes manuais** em `gerar-banco.mjs`: o `layout` de páginas de cada prova adaptativa (qual questão é de qual bloco e nível), as posições das alternativas que o recorte automático não acha (`OVERRIDE`) e os gabaritos de 2024.1 e 2025.1 (`ANS`). Um caderno novo precisa desses três ajustes.
 
-## Material de revisão (fichas da Wave)
+## Material de revisão (Wave 2026)
 
-As fichas ficam em `docs/material/` e **não vão para o GitHub por enquanto** (estão no `.gitignore`), até confirmar que podem ser publicadas. Por isso os links só aparecem ao abrir o site no seu computador (arquivo local ou `localhost`); no site publicado ficam escondidos, para não dar erro 404.
+Os PDFs de autoestudo da Wave ficam em `docs/material/` e **não vão para o GitHub por enquanto**, pois ainda não foi confirmada a autorização para publicá-los. Os links aparecem apenas ao abrir o site localmente (arquivo ou `localhost`); no site publicado ficam ocultos para evitar links quebrados.
 
-Padrão para adicionar uma ficha (o mesmo está comentado no topo de `docs/js/materiais.js`):
+O catálogo está em `docs/js/materiais.js` e associa os assuntos de `docs/js/assuntos.js` às aulas correspondentes. Cada link abre o **PDF completo da aula**, sem direcionamento para uma página específica.
 
-1. Nome do PDF: `ficha-<n>-<temas-com-hifen>.pdf`, em `docs/material/`.
-2. Em `FICHAS`, registre com o id `f<n>` (mesmo número do arquivo) e o nome `Ficha <n>`.
-3. Em `MATERIAL`, para cada assunto (escrito igual ao de `assuntos.js`), indique a página onde a teoria começa: `{ f: "f6", p: 2, t: "o que a página cobre", wave: "Aula 3, seção 1" }`. Ficha que não é de um assunto (fórmulas, estratégia) vai em `GERAL`.
-4. Rode `npm run material`: ele confere nomes, páginas e assuntos e lista os assuntos que ainda estão sem ficha (hoje: Estatística, Geometria espacial e Trigonometria, que nenhuma das 5 fichas trata).
+### Como adicionar ou atualizar materiais
 
-Para liberar no site: apague a linha `docs/material/*.pdf` do `.gitignore`, rode `git add docs/material` e troque `MATERIAL_PUBLICO` para `true` em `docs/js/materiais.js`. O link abre o PDF na página indicada (`#page=N`); em alguns navegadores de celular ele abre na primeira página.
+1. Coloque os PDFs em `docs/material/`.
+2. Registre cada arquivo em `FICHAS`, com um identificador, nome e caminho relativo dentro de `docs/`.
+3. Em `MATERIAL`, associe os assuntos aos PDFs correspondentes. Os nomes dos assuntos devem ser idênticos aos de `assuntos.js`. Cada associação contém o identificador da aula (`f`) e uma descrição do conteúdo (`t`).
+4. Rode `npm run material` para conferir se os PDFs existem, se os caminhos estão corretos e se os assuntos cadastrados são válidos. O comando também avisa sobre PDFs presentes na pasta que não estejam registrados no catálogo.
+
+Para disponibilizar os PDFs no site publicado, confirme primeiro a autorização para publicação. Depois, será necessário rever a regra de exclusão no `.gitignore`, incluir os arquivos no Git e ajustar `MATERIAL_PUBLICO` para `true` em `docs/js/materiais.js`.
 
 ## Observações
 
