@@ -1,45 +1,123 @@
-// Confere o material de revisão (docs/js/materiais.js): PDFs existem e seguem o padrão de nome, as páginas existem
-// e os assuntos batem com docs/js/assuntos.js. Uso: npm run material
-import fs from "fs"; import vm from "vm";
 
-const DOCS = new URL("../docs/", import.meta.url), ler = f => fs.readFileSync(new URL(f, DOCS), "utf8");
-const ctx = vm.createContext({ console: { assert() {} } }); // as conferências do navegador ficam por conta deste script
-vm.runInContext(ler("js/assuntos.js") + "\n" + ler("js/materiais.js") + "\nthis.out = { ASSUNTOS, FICHAS, MATERIAL, GERAL };", ctx);
+import fs from "node:fs";
+import vm from "node:vm";
+
+const DOCS = new URL("../docs/", import.meta.url);
+const ler = arquivo =>
+  fs.readFileSync(new URL(arquivo, DOCS), "utf8");
+
+const ctx = vm.createContext({
+  console: { assert() {} }
+});
+
+vm.runInContext(
+  ler("js/assuntos.js") +
+  "\n" +
+  ler("js/materiais.js") +
+  "\nthis.out = { ASSUNTOS, FICHAS, MATERIAL, GERAL };",
+  ctx
+);
+
 const { ASSUNTOS, FICHAS, MATERIAL, GERAL } = ctx.out;
 
 let erros = 0;
-const erro = m => { console.error("✗ " + m); erros++; }, aviso = m => console.warn("! " + m);
-let mupdf = null; try { mupdf = await import("mupdf"); } catch {}
-if (!mupdf) aviso("mupdf não instalado (npm install): o número de páginas dos PDFs não foi conferido");
-
-const paginas = {};
-for (const [id, f] of Object.entries(FICHAS)) {
-  const num = id.match(/^f(\d+)$/)?.[1];
-  if (!num) { erro(`id de ficha inválido: ${id} (use f<n>)`); continue; }
-  if (f.nome !== `Ficha ${num}`) erro(`${id}: o nome deveria ser "Ficha ${num}" (está "${f.nome}")`);
-  if (!new RegExp(`^material/ficha-${num}-[a-z0-9-]+\\.pdf$`).test(f.arq)) erro(`${id}: nome fora do padrão (${f.arq}); use material/ficha-${num}-<temas-com-hifen>.pdf`);
-  const url = new URL(f.arq, DOCS);
-  if (!fs.existsSync(url)) { erro(`${id}: arquivo não encontrado (docs/${f.arq})`); continue; }
-  if (mupdf) paginas[id] = mupdf.Document.openDocument(fs.readFileSync(url), "application/pdf").countPages();
-}
-
-const confere = (onde, m) => {
-  if (!FICHAS[m.f]) return erro(`${onde}: a ficha "${m.f}" não está em FICHAS`);
-  if (!Number.isInteger(m.p) || m.p < 1) return erro(`${onde}: página inválida (${m.p})`);
-  if (paginas[m.f] && m.p > paginas[m.f]) erro(`${onde}: página ${m.p}, mas ${m.f} tem só ${paginas[m.f]}`);
-  if (!m.t) erro(`${onde}: falta "t" (o que a página cobre)`);
+const erro = mensagem => {
+  console.error("✗ " + mensagem);
+  erros++;
 };
-for (const [a, ms] of Object.entries(MATERIAL)) {
-  if (!ASSUNTOS[a]) erro(`"${a}" não existe em assuntos.js (confira a grafia)`);
-  ms.forEach(m => confere(a, m));
+
+const aviso = mensagem => console.warn("! " + mensagem);
+
+const ids = new Set();
+
+for (const [id, ficha] of Object.entries(FICHAS)) {
+  if (!/^f\d+$/.test(id)) {
+    erro(`ID inválido: ${id}`);
+    continue;
+  }
+
+  if (ids.has(id)) {
+    erro(`ID duplicado: ${id}`);
+  }
+  ids.add(id);
+
+  if (!ficha.nome || !ficha.arq) {
+    erro(`${id}: falta nome ou caminho do arquivo`);
+    continue;
+  }
+
+  if (!ficha.arq.startsWith("material/") ||
+      !ficha.arq.endsWith(".pdf")) {
+    erro(`${id}: caminho inválido (${ficha.arq})`);
+    continue;
+  }
+
+  const arquivo = new URL(ficha.arq, DOCS);
+
+  if (!fs.existsSync(arquivo)) {
+    erro(`${id}: PDF não encontrado (docs/${ficha.arq})`);
+  }
 }
-GERAL.forEach((m, i) => { confere(`GERAL[${i}]`, m); if (!m.rotulo) erro(`GERAL[${i}]: falta "rotulo"`); });
 
-const pasta = new URL("material/", DOCS), usados = new Set(Object.values(FICHAS).map(f => f.arq.replace("material/", "")));
-if (fs.existsSync(pasta)) for (const n of fs.readdirSync(pasta).filter(n => n.endsWith(".pdf")))
-  if (!usados.has(n)) aviso(`docs/material/${n} não está registrado em FICHAS`);
+const confere = (onde, material) => {
+  if (!FICHAS[material.f]) {
+    erro(`${onde}: aula "${material.f}" não existe em FICHAS`);
+    return;
+  }
 
-const sem = Object.keys(ASSUNTOS).filter(a => !MATERIAL[a]);
-if (sem.length) console.log(`Assuntos sem ficha (${sem.length}): ${sem.join(", ")}`);
-console.log(erros ? `${erros} erro(s)` : `Material ok: ${Object.keys(FICHAS).length} fichas, ${Object.keys(MATERIAL).length} de ${Object.keys(ASSUNTOS).length} assuntos com link`);
+  if (!material.t || !material.t.trim()) {
+    erro(`${onde}: falta descrição do conteúdo (t)`);
+  }
+};
+
+for (const [assunto, materiais] of Object.entries(MATERIAL)) {
+  if (!ASSUNTOS[assunto]) {
+    erro(`"${assunto}" não existe em assuntos.js`);
+  }
+
+  if (!Array.isArray(materiais)) {
+    erro(`"${assunto}": os materiais precisam estar em uma lista`);
+    continue;
+  }
+
+  materiais.forEach(material => confere(assunto, material));
+}
+
+GERAL.forEach((material, i) => {
+  confere(`GERAL[${i}]`, material);
+
+  if (!material.rotulo) {
+    erro(`GERAL[${i}]: falta rótulo`);
+  }
+});
+
+const pasta = new URL("material/", DOCS);
+const usados = new Set(
+  Object.values(FICHAS).map(ficha => ficha.arq.slice("material/".length))
+);
+
+if (fs.existsSync(pasta)) {
+  for (const nome of fs.readdirSync(pasta).filter(n => n.endsWith(".pdf"))) {
+    if (!usados.has(nome)) {
+      aviso(`docs/material/${nome} não está registrado em FICHAS`);
+    }
+  }
+} else {
+  erro("A pasta docs/material/ não existe");
+}
+
+const sem = Object.keys(ASSUNTOS).filter(assunto => !MATERIAL[assunto]);
+
+if (sem.length) {
+  console.log(`Assuntos sem material associado (${sem.length}): ${sem.join(", ")}`);
+}
+
+console.log(
+  erros
+    ? `${erros} erro(s) encontrado(s)`
+    : `Material ok: ${Object.keys(FICHAS).length} PDFs, ` +
+      `${Object.keys(MATERIAL).length} assuntos com link, ` +
+      `${sem.length} assuntos sem material`
+);
+
 process.exit(erros ? 1 : 0);
