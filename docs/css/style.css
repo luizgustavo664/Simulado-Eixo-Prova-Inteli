@@ -430,3 +430,9 @@ a.star.pop>span:first-child{display:inline-block;animation:star-pop .6s ease}
 .instr .rules li::before{content:"";position:absolute;left:3px;top:.7em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .instr .nav button{padding:12px 24px}
 @media (max-width:560px){.provas.fixas{grid-template-columns:1fr}}
+
+/* ficha de revisão (Wave): link discreto ao lado do assunto, no resultado e em "Onde você mais erra" */
+a.ficha{margin-left:8px;font:600 .78rem var(--ui);color:var(--accent);text-decoration:none;white-space:nowrap}
+a.ficha:hover{text-decoration:underline}
+a.ficha:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.assuntos li a.ficha{margin-left:6px}

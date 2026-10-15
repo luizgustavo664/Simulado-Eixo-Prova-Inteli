@@ -5,7 +5,8 @@
   "description": "Simulado não oficial do Eixo Prova do processo seletivo do Inteli, montado com as questões dos cadernos de prova.",
   "type": "module",
   "scripts": {
-    "build": "node gerador/gerar-banco.mjs"
+    "build": "node gerador/gerar-banco.mjs",
+    "material": "node gerador/checar-material.mjs"
   },
   "devDependencies": {
     "mupdf": "1.28.1"

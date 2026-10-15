@@ -5,3 +5,7 @@ node_modules/
 provas/*.pdf
 .claude
 feedbacks
+
+# Fichas de revisão da Wave: ficam só no seu computador até confirmar que podem ser publicadas.
+# Para liberar: apague a linha abaixo, suba os PDFs (git add docs/material) e troque MATERIAL_PUBLICO para true em docs/js/materiais.js
+docs/material/*.pdf

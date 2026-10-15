@@ -34,6 +34,7 @@ Quem já visitou o site vê, uma vez, um aviso com as novidades da versão. Para
 - **Assuntos**: cada questão tem um assunto do edital (14, em `docs/js/assuntos.js`). O resultado mostra os assuntos em que você errou, e a tela inicial, os que você mais erra no histórico.
 - **Resultado e revisão** no formato de folha corrigida: desempenho por bloco, questões recolhíveis com o assunto de cada uma, gabarito e, quando o caderno traz, a resolução oficial (2022.2, 2024.1 e 2025.1).
 - **Assuntos para revisar**, em ordem de prioridade com os erros e acertos de cada um, e **Onde você mais erra** na tela inicial, com atalho para o Meus erros.
+- **Fichas de revisão da Wave**: cada assunto em que você errou (no resultado e em "Onde você mais erra") ganha um link que abre a ficha direto na página do assunto, e o resultado traz também a folha de fórmulas e a estratégia de prova. Por enquanto os PDFs ficam fora do GitHub, então os links só aparecem ao abrir o site no seu computador (ver "Material de revisão").
 - **Histórico de notas** em cartões (cada tentativa reabre a correção completa, salva no navegador) e **calculadora de equivalência** do ENEM, SAT, ACT e IB (edital, item 8.3).
 
 ## Estrutura
@@ -45,12 +46,15 @@ docs/                    site (é o que vai para o ar)
   js/banco.js            banco de questões, gerado pelo build (não edite à mão)
   js/assuntos.js         assunto de cada questão (marcado à mão; questão nova no banco precisa entrar aqui)
   js/regras.js           provas, pontuação, correção e equivalência ENEM/SAT/ACT/IB
+  js/materiais.js        liga cada assunto às páginas das fichas da Wave (docs/material/*.pdf)
   js/estrela.js          botão de estrela do GitHub e mascote
   js/dialogos.js         boas-vindas e feedback
   js/app.js              telas: início, instruções, prova e resultado
+  material/              fichas de revisão da comunidade Wave (PDF; fora do git por enquanto)
   img/                   recortes: <id>.png (questão) e <id>s.png (resolução), gerados pelo build
 gerador/
   gerar-banco.mjs        lê os PDFs, recorta as questões e gera docs/img e docs/js/banco.js
+  checar-material.mjs    confere as fichas da Wave: nomes, páginas e assuntos (npm run material)
 provas/                  PDFs originais (fora do git, ver .gitignore)
 ```
 
@@ -79,8 +83,22 @@ Os scripts são comuns (não módulos ES) para a página abrir direto do arquivo
 - **Gabarito**: 2022 e 2023 trazem "ALTERNATIVA CORRETA" no PDF. Em 2024.1 a resposta vem do "Gabarito:" do caderno. Em 2025.1 vem das resoluções, conferida com o destaque amarelo que o caderno põe na alternativa certa (o destaque é apagado das imagens).
 - **Ajustes manuais** em `gerar-banco.mjs`: o `layout` de páginas de cada prova adaptativa (qual questão é de qual bloco e nível), as posições das alternativas que o recorte automático não acha (`OVERRIDE`) e os gabaritos de 2024.1 e 2025.1 (`ANS`). Um caderno novo precisa desses três ajustes.
 
+## Material de revisão (fichas da Wave)
+
+As fichas ficam em `docs/material/` e **não vão para o GitHub por enquanto** (estão no `.gitignore`), até confirmar que podem ser publicadas. Por isso os links só aparecem ao abrir o site no seu computador (arquivo local ou `localhost`); no site publicado ficam escondidos, para não dar erro 404.
+
+Padrão para adicionar uma ficha (o mesmo está comentado no topo de `docs/js/materiais.js`):
+
+1. Nome do PDF: `ficha-<n>-<temas-com-hifen>.pdf`, em `docs/material/`.
+2. Em `FICHAS`, registre com o id `f<n>` (mesmo número do arquivo) e o nome `Ficha <n>`.
+3. Em `MATERIAL`, para cada assunto (escrito igual ao de `assuntos.js`), indique a página onde a teoria começa: `{ f: "f6", p: 2, t: "o que a página cobre", wave: "Aula 3, seção 1" }`. Ficha que não é de um assunto (fórmulas, estratégia) vai em `GERAL`.
+4. Rode `npm run material`: ele confere nomes, páginas e assuntos e lista os assuntos que ainda estão sem ficha (hoje: Estatística, Geometria espacial e Trigonometria, que nenhuma das 5 fichas trata).
+
+Para liberar no site: apague a linha `docs/material/*.pdf` do `.gitignore`, rode `git add docs/material` e troque `MATERIAL_PUBLICO` para `true` em `docs/js/materiais.js`. O link abre o PDF na página indicada (`#page=N`); em alguns navegadores de celular ele abre na primeira página.
+
 ## Observações
 
+- As fichas são material da comunidade Wave; os créditos são dos autores.
 - Em 2024.1, o 4º nível do bloco 4 tem só 2 questões no caderno e ficou de fora.
 - Erros encontrados nos cadernos oficiais (as respostas não mudam): na resolução da questão de índice de ações de 2025.1 (bloco 3, nível 1) aparece x = ±√2 onde o certo é x = ±2; no enunciado do robô na cratera de 2025.1 (bloco 3, nível 2) está x = −2 + 5t, quando o certo é x = −2 + Vₓt.
 - As questões, resoluções e PDFs são do Inteli. Este projeto só os reorganiza para estudo.
